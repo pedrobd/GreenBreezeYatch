@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ success: true, message: 'Status updated' });
 
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
         console.error('SIBS Callback Error:', error);
-        return NextResponse.json({ error: 'Internal server error', message: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Internal server error', message: error instanceof Error ? error.message : String(error) }, { status: 500 });
     }
 }
