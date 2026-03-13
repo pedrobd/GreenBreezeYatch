@@ -288,3 +288,45 @@ export async function getReservationDatesAction() {
     const dates = data.map((d: any) => d.date);
     return { data: dates };
 }
+
+import { initiateSibsPayment } from "@/utils/sibs";
+
+export async function initiateReservationPaymentAction(reservationId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { error: "Não autorizado." };
+    }
+
+    const adminClient = createAdminClient();
+    const { data: reservation, error } = await adminClient
+        .from("reservations")
+        .select("*, fleet(name)")
+        .eq("id", reservationId)
+        .single();
+
+    if (error || !reservation) {
+        return { error: "Reserva não encontrada." };
+    }
+
+    const paymentResult = await initiateSibsPayment({
+        amount: reservation.total_amount,
+        currency: "EUR",
+        merchantReference: reservation.id,
+        description: `Reserva GreenBreeze - ${reservation.fleet?.name || 'Barco'} - ${reservation.date}`,
+        returnUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reservations?payment=success`,
+    });
+
+    if (!paymentResult.success) {
+        return { error: paymentResult.error || "Erro ao iniciar pagamento SIBS." };
+    }
+
+    // Update reservation with SIBS payment ID (sibs_reference)
+    await adminClient
+        .from("reservations")
+        .update({ sibs_reference: paymentResult.paymentId })
+        .eq("id", reservationId);
+
+    return { success: true, redirectUrl: paymentResult.redirectUrl };
+}

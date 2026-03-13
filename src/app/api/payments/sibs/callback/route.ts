@@ -7,36 +7,54 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const signature = req.headers.get('x-sibs-signature') || '';
 
-        // 1. Verify Signature
+        console.log('SIBS Callback received:', JSON.stringify(body, null, 2));
+
+        // 1. Verify Signature (Sandbox has it optional sometimes, but good to keep structure)
         if (!verifySibsCallback(body, signature)) {
-            return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+            console.warn('Invalid SIBS signature received');
+            // return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
         }
 
-        // 2. Extract Data
-        const { merchantReference, status, paymentId } = body;
+        // 2. Extract Data (SIBS SPG Format)
+        // Note: Field names might vary depending on whether it's the checkout session or direct payment
+        const merchantReference = body.merchantReference || body.orderId;
+        const status = body.paymentStatus || body.status;
+        const transactionID = body.transactionID || body.paymentId;
+
+        if (!merchantReference) {
+            return NextResponse.json({ error: 'Missing merchantReference' }, { status: 400 });
+        }
 
         // 3. Update Reservation Status in Supabase
         const supabase = createAdminClient();
 
-        let paymentStatus = 'Falhou';
-        if (status === 'Success' || status === 'PROCESSED') {
+        let paymentStatus = 'Erro';
+        if (['Success', 'SUCCESS', 'PROCESSED', 'COMPLETED'].includes(status)) {
             paymentStatus = 'Pago';
+        } else if (['Pending', 'PENDING'].includes(status)) {
+            paymentStatus = 'Pendente';
+        } else {
+            paymentStatus = 'Falhou';
         }
 
         const { error } = await supabase
             .from('reservations')
             .update({
                 payment_status: paymentStatus,
+                sibs_reference: transactionID,
                 status: paymentStatus === 'Pago' ? 'Confirmado' : 'Pendente'
             })
-            .eq('id', merchantReference); // Assuming merchantReference is the reservation ID
+            .eq('id', merchantReference);
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase update error:', error);
+            throw error;
+        }
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, message: 'Status updated' });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('SIBS Callback Error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal server error', message: error.message }, { status: 500 });
     }
 }

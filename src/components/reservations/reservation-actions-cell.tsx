@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MoreHorizontal, Edit, XCircle, ClipboardCopy } from "lucide-react";
+import { MoreHorizontal, Edit, XCircle, ClipboardCopy, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import {
     DropdownMenu,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { EditReservationDialog } from "./edit-reservation-dialog";
-import { updateReservationAction } from "@/app/actions/reservations";
+import { updateReservationAction, initiateReservationPaymentAction } from "@/app/actions/reservations";
 
 interface ReservationActionsCellProps {
     reservation: any;
@@ -46,6 +46,19 @@ export function ReservationActionsCell({ reservation, fleet }: ReservationAction
         }
     };
 
+    const handleSibsPayment = async () => {
+        setLoading(true);
+        const result = await initiateReservationPaymentAction(reservation.id);
+        setLoading(false);
+
+        if (result.error) {
+            toast.error(result.error);
+        } else if (result.redirectUrl) {
+            toast.info("A redirecionar para o portal de pagamento...");
+            window.location.href = result.redirectUrl;
+        }
+    };
+
     return (
         <>
             <DropdownMenu>
@@ -75,6 +88,20 @@ export function ReservationActionsCell({ reservation, fleet }: ReservationAction
                         <Edit className="h-4 w-4" />
                         Editar Detalhes
                     </DropdownMenuItem>
+
+                    {reservation.status !== "Cancelado" && reservation.payment_status !== "Pago" && (
+                        <>
+                            <DropdownMenuItem
+                                onClick={handleSibsPayment}
+                                disabled={loading}
+                                className="rounded-xl px-3 py-2 cursor-pointer bg-[#44C3B2]/10 text-[#0A1F1C] focus:bg-[#44C3B2] focus:text-white flex items-center gap-2"
+                            >
+                                <CreditCard className="h-4 w-4" />
+                                {loading ? "A processar..." : "Pagar SIBS (Sandbox)"}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-[#0A1F1C]/5 mx-2" />
+                        </>
+                    )}
 
                     {reservation.status !== "Cancelado" && (
                         <DropdownMenuItem
