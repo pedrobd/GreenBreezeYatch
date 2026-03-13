@@ -1,0 +1,100 @@
+"use client";
+
+import { useState } from "react";
+import { MoreHorizontal, Settings2, Pencil, Trash2, Calendar } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
+import { EditBoatDialog } from "./edit-boat-dialog";
+import { deleteBoatAction } from "@/app/actions/fleet";
+
+interface Boat {
+    id: string;
+    name: string;
+    type: string;
+    capacity: number;
+    current_location: string;
+    status: "Disponível" | "Manutenção" | "Indisponível";
+    base_price: number;
+    image_url?: string | null;
+}
+
+interface FleetActionsCellProps {
+    boat: Boat;
+}
+
+export function FleetActionsCell({ boat }: FleetActionsCellProps) {
+    const [isEditOpen, setIsEditOpen] = useState(false);
+
+    async function onDelete() {
+        if (confirm(`Tem a certeza que deseja eliminar a embarcação ${boat.name}?`)) {
+            const result = await deleteBoatAction(boat.id);
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                toast.success("Embarcação eliminada.");
+            }
+        }
+    }
+
+    return (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-10 w-10 p-0 rounded-xl hover:bg-[#0A1F1C] hover:text-[#44C3B2] transition-all">
+                        <span className="sr-only">Abrir menu</span>
+                        <MoreHorizontal className="h-5 w-5" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="rounded-2xl border-white/50 bg-white/90 backdrop-blur-xl shadow-2xl p-2 min-w-[200px] font-body">
+                    <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/40 px-3 py-2">GESTÃO DE EMBARCAÇÃO</DropdownMenuLabel>
+
+                    <DropdownMenuItem asChild className="rounded-xl px-3 py-2 cursor-pointer focus:bg-[#0A1F1C] focus:text-[#44C3B2]">
+                        <Link href={`/reservations?boatId=${boat.id}`}>
+                            <Calendar className="mr-2 h-4 w-4 opacity-50" />
+                            Ver Agenda
+                        </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                        onClick={() => setIsEditOpen(true)}
+                        className="rounded-xl px-3 py-2 cursor-pointer focus:bg-[#0A1F1C] focus:text-[#44C3B2]"
+                    >
+                        <Pencil className="mr-2 h-4 w-4 opacity-50" />
+                        Editar Detalhes
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator className="bg-[#0A1F1C]/5 mx-2" />
+
+                    <DropdownMenuItem className="rounded-xl px-3 py-2 cursor-pointer focus:bg-[#0A1F1C] focus:text-[#44C3B2]">
+                        <Settings2 className="mr-2 h-4 w-4 opacity-50" />
+                        Registar Manutenção
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                        onClick={onDelete}
+                        className="rounded-xl px-3 py-2 cursor-pointer focus:bg-red-500 focus:text-white transition-colors"
+                    >
+                        <Trash2 className="mr-2 h-4 w-4 opacity-50" />
+                        Eliminar Barco
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <EditBoatDialog
+                boat={boat}
+                open={isEditOpen}
+                onOpenChange={setIsEditOpen}
+            />
+        </>
+    );
+}
