@@ -86,13 +86,13 @@ export const initiateSibsPayment = async (request: SibsPaymentRequest) => {
             raw: data
         };
 
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
         console.error('initiateSibsPayment Error:', error);
-        return { success: false, error: error.message };
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 };
 
-export const verifySibsCallback = (payload: any, signature: string) => {
+export const verifySibsCallback = (payload: unknown, signature: string) => {
     // SIBS verification usually uses the Client Secret to verify HMAC
     // For Sandbox, we might skip strict verification if keys are not configured
     if (!signature) return false;

@@ -5,6 +5,7 @@ import { createAdminClient } from "@/utils/supabase/admin";
 import { reservationSchema, ReservationFormValues } from "@/lib/validations/reservations";
 import { revalidatePath } from "next/cache";
 import { sendReservationEmails } from "@/app/actions/emails";
+import { initiateSibsPayment } from "@/utils/sibs";
 
 export async function getExtraActivitiesAction() {
     const supabase = await createClient();
@@ -288,8 +289,6 @@ export async function getReservationDatesAction() {
     const dates = data.map((d: any) => d.date);
     return { data: dates };
 }
-
-import { initiateSibsPayment } from "@/utils/sibs";
 
 export async function initiateReservationPaymentAction(reservationId: string) {
     const supabase = await createClient();
