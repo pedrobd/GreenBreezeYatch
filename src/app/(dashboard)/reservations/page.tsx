@@ -208,10 +208,15 @@ export default async function ReservationsPage({
                                                     <TableCell>
                                                         <span className="font-bold text-[#0A1F1C]/70 text-sm">{new Date(reservation.date).toLocaleDateString('pt-PT')}</span>
                                                     </TableCell>
-                                                    <TableCell>
-                                                        <span className="text-[11px] font-bold bg-[#0A1F1C]/5 px-2.5 py-1.5 rounded-lg text-[#0A1F1C]/70">
-                                                            {reservation.boat_programs ? `${reservation.boat_programs.name} (${reservation.boat_programs.duration_hours}h)` : reservation.time || "-"}
-                                                        </span>
+                                                                                                        <TableCell>
+                                                        <div className="flex flex-col gap-1">
+                                                            {reservation.boat_programs && (
+                                                                <span className="text-[10px] font-medium opacity-50 uppercase tracking-wider">{reservation.boat_programs.name}</span>
+                                                            )}
+                                                            <span className="text-[11px] font-bold bg-[#0A1F1C]/5 px-2.5 py-1.5 rounded-lg text-[#0A1F1C]/70 w-fit">
+                                                                {reservation.time || "-"}
+                                                            </span>
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell>
                                                         <Badge

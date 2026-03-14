@@ -60,6 +60,7 @@ export default async function FleetPage() {
                         <TableHeader className="bg-[#0A1F1C]/5">
                             <TableRow className="hover:bg-transparent border-white/20">
                                 <TableHead className="w-[100px] font-black text-[10px] uppercase tracking-widest text-[#0A1F1C]/50 py-6 px-8">ID</TableHead>
+                                <TableHead className="w-[50px] font-black text-[10px] uppercase tracking-widest text-[#0A1F1C]/50 py-6">Ordem</TableHead>
                                 <TableHead className="font-black text-[10px] uppercase tracking-widest text-[#0A1F1C]/50 py-6">Nome da Embarcação</TableHead>
                                 <TableHead className="font-black text-[10px] uppercase tracking-widest text-[#0A1F1C]/50 py-6">Tipo</TableHead>
                                 <TableHead className="font-black text-[10px] uppercase tracking-widest text-[#0A1F1C]/50 py-6">Capacidade</TableHead>
@@ -75,6 +76,9 @@ export default async function FleetPage() {
                                     <TableRow key={boat.id} className="group hover:bg-white/30 border-white/10 transition-colors">
                                         <TableCell className="py-4 px-8">
                                             <span className="font-bold text-[#0A1F1C] opacity-20 text-[10px] font-body tracking-wider">#{boat.id.split('-')[0]}</span>
+                                        </TableCell>
+                                        <TableCell className="py-4">
+                                            <span className="font-bold text-[#0A1F1C]/40 text-xs font-body">{boat.order_index}</span>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
@@ -140,7 +144,7 @@ export default async function FleetPage() {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="py-20 text-center">
+                                    <TableCell colSpan={9} className="py-20 text-center">
                                         <div className="flex flex-col items-center gap-3 opacity-30">
                                             <Anchor className="h-10 w-10" />
                                             <p className="font-heading font-bold">Nenhuma embarcação encontrada</p>

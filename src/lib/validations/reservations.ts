@@ -6,6 +6,7 @@ export const reservationSchema = z.object({
     client_phone: z.string().min(9, "Telefone inválido").optional().or(z.literal("")),
     boat_id: z.string().min(1, "Selecione um barco"),
     date: z.string().min(1, "Selecione uma data"),
+    time: z.string().optional().or(z.literal("")),
     program_id: z.string().optional().or(z.literal("")),
     season_applied: z.string().optional(),
     subtotal_amount: z.coerce.number().min(0).default(0),

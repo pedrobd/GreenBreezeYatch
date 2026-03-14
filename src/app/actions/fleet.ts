@@ -21,7 +21,11 @@ export async function createBoatAction(values: BoatFormValues) {
     }
 
     const adminClient = createAdminClient();
-    const { error } = await adminClient.from("fleet").insert([validatedFields.data]);
+    const { data, error } = await adminClient
+        .from("fleet")
+        .insert([validatedFields.data])
+        .select("id")
+        .single();
 
     if (error) {
         console.error("Supabase error:", error);
@@ -29,7 +33,7 @@ export async function createBoatAction(values: BoatFormValues) {
     }
 
     revalidatePath("/fleet");
-    return { success: true };
+    return { success: true, id: data.id };
 }
 
 export async function updateBoatAction(id: string, values: BoatFormValues) {

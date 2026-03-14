@@ -56,9 +56,9 @@ export function calculateStaffPayout(
 
 export function detectProgramFromTime(time: string) {
     const t = time.toLowerCase();
-    if (t.includes("sunset") || t.includes("3h")) return "Sunset";
-    if (t.includes("6 hora") || t.includes("6h")) return "6 Hour";
-    if (t.includes("dia inteiro") || t.includes("full day") || t.includes("8h")) return "Full Day";
-    if (t.includes("meio dia") || t.includes("half day") || t.includes("4h")) return "Half Day";
+    if (t.includes("sunset") || t.includes("3h") || t.includes("19:30 - 21:30")) return "Sunset";
+    if (t.includes("6 hora") || t.includes("6h") || t.includes("10:00 - 16:00")) return "6 Hour";
+    if (t.includes("dia inteiro") || t.includes("full day") || t.includes("8h") || t.includes("10:00 - 18:00")) return "Full Day";
+    if (t.includes("meio dia") || t.includes("half day") || t.includes("4h") || t.includes("10:00 - 14:00") || t.includes("15:00 - 19:00")) return "Half Day";
     return "Hourly";
 }

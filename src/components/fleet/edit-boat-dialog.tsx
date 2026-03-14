@@ -130,8 +130,8 @@ export function EditBoatDialog({ boat, open, onOpenChange }: EditBoatDialogProps
                 <Tabs defaultValue="detalhes" className="w-full">
                     <TabsList className="grid w-full grid-cols-3 bg-white/50 border border-white/50 rounded-xl mb-4">
                         <TabsTrigger value="detalhes" className="rounded-lg">Detalhes</TabsTrigger>
-                        <TabsTrigger value="programas" className="rounded-lg" disabled={form.watch("is_partner")}>Programas</TabsTrigger>
-                        <TabsTrigger value="extras" className="rounded-lg" disabled={form.watch("is_partner")}>Extras</TabsTrigger>
+                        <TabsTrigger value="programas" className="rounded-lg">Programas</TabsTrigger>
+                        <TabsTrigger value="extras" className="rounded-lg">Extras</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="detalhes">

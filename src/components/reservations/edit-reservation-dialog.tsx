@@ -50,6 +50,7 @@ import {
     getFoodMenuAction
 } from "@/app/actions/reservations";
 import { getBoatProgramsAction, getBoatExtrasAction } from "@/app/actions/fleet";
+import { getExtrasAction } from "@/app/actions/extras";
 import { getTeamMembers } from "@/app/actions/team";
 import { getStaffRates } from "@/app/actions/rates";
 import { calculateStaffPayout, detectProgramFromTime } from "@/utils/staff-calculations";
@@ -102,6 +103,7 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange }
             boat_id: reservation?.boat_id || "",
             program_id: reservation?.program_id || "",
             date: reservation?.date || "",
+            time: reservation?.time || "",
             status: reservation?.status || "Pendente",
             subtotal_amount: reservation?.subtotal_amount || 0,
             extras_amount: reservation?.extras_amount || 0,
@@ -142,8 +144,20 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange }
     useEffect(() => {
         if (selectedBoatId) {
             getBoatProgramsAction(selectedBoatId).then(res => setBoatPrograms(res.data || []));
-            getBoatExtrasAction(selectedBoatId).then(res => setBoatExtras(res.data || []));
-            // Don't auto-reset program/extras on edit load unless boat was actually changed manually
+            
+            // Fetch all types of extras: boat-specific, global extras, and extra activities
+            Promise.all([
+                getBoatExtrasAction(selectedBoatId),
+                getExtrasAction(),
+                getExtraActivitiesAction()
+            ]).then(([boatRes, globalRes, activityRes]) => {
+                const combined = [
+                    ...(boatRes.data || []),
+                    ...(globalRes.data || []),
+                    ...(activityRes.data || [])
+                ];
+                setBoatExtras(combined);
+            });
         } else {
             setBoatPrograms([]);
             setBoatExtras([]);
@@ -163,13 +177,6 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange }
 
     // Auto-calculate total amount and VAT
     useEffect(() => {
-        if (isPartner) {
-            form.setValue("total_amount", 0);
-            form.setValue("subtotal_amount", 0);
-            form.setValue("vat_base_amount", 0);
-            return;
-        }
-
         const program = boatPrograms.find(p => p.id === selectedProgramId);
         let baseGross = 0;
         let vatBase = 0;
@@ -179,7 +186,7 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange }
             vatBase = baseGross - (baseGross / (1 + (program.vat_rate / 100)));
         }
 
-        const locationSurcharge = selectedBoardingLocation === "Setúbal" ? (selectedBoat?.setubal_surcharge || 50) : 0;
+        const locationSurcharge = (!isPartner && selectedBoardingLocation === "Setúbal") ? (selectedBoat?.setubal_surcharge || 50) : 0;
         baseGross += locationSurcharge;
 
         let extrasGross = 0;
@@ -192,7 +199,8 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange }
                 const qty = isPerPerson ? totalPassengers : curr.quantity;
                 const gross = (extra.price || 0) * qty;
                 extrasGross += gross;
-                vatExtras += gross - (gross / (1 + (extra.vat_rate / 100)));
+                const vatRate = extra.vat_rate || 23;
+                vatExtras += gross - (gross / (1 + (vatRate / 100)));
             }
         });
 
@@ -258,10 +266,20 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange }
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[950px] rounded-3xl border-white/50 bg-white/70 backdrop-blur-2xl shadow-2xl p-8 font-body border max-h-[90vh] overflow-y-auto">
                 <DialogHeader className="space-y-3 text-[#0A1F1C]">
-                    <DialogTitle className="text-3xl font-bold font-heading">Editar Reserva</DialogTitle>
-                    <DialogDescription className="text-[#0A1F1C]/60">
-                        Atualize os detalhes da reserva #{reservation?.id?.split('-')[0]}.
-                    </DialogDescription>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <DialogTitle className="text-3xl font-bold font-heading">Editar Reserva</DialogTitle>
+                            <DialogDescription className="text-[#0A1F1C]/60">
+                                Atualize os detalhes da reserva #{reservation?.id?.split('-')[0]}.
+                            </DialogDescription>
+                        </div>
+                        <div className="flex flex-col items-start md:items-end">
+                            <span className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Valor a Pagar</span>
+                            <span className="text-3xl font-bold text-[#44C3B2] bg-[#0A1F1C] px-6 py-2 rounded-2xl shadow-xl border border-[#44C3B2]/20 tabular-nums">
+                                {Number(form.watch("total_amount") || 0).toFixed(2)}€
+                            </span>
+                        </div>
+                    </div>
                 </DialogHeader>
 
                 <Form {...form}>
@@ -356,32 +374,91 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange }
                                         </Popover>
                                     </FormItem>
                                 )} />
-                                {!isPartner && (
-                                    <FormField control={form.control} name="program_id" render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Horário / Programa</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value || undefined}>
-                                                <FormControl>
-                                                    <SelectTrigger className="rounded-xl border-white/50 bg-white/50 focus:ring-[#44C3B2]">
-                                                        <SelectValue placeholder="Selecione o programa" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent className="rounded-xl border-white/50 bg-white/90 backdrop-blur-xl">
-                                                    {boatPrograms.length > 0 ? (
-                                                        boatPrograms.filter(p => p.is_active).map(p => (
-                                                            <SelectItem key={p.id} value={p.id}>
-                                                                {p.name} ({p.duration_hours}h) - {p[`price_${season}`]}€
-                                                            </SelectItem>
-                                                        ))
-                                                    ) : (
-                                                        <SelectItem value="none" disabled>Sem programas disponíveis</SelectItem>
-                                                    )}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage className="text-[10px]" />
-                                        </FormItem>
-                                    )} />
-                                )}
+                                 <FormField control={form.control} name="program_id" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Horário / Programa</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value || undefined}>
+                                            <FormControl>
+                                                <SelectTrigger className="rounded-xl border-white/50 bg-white/50 focus:ring-[#44C3B2]">
+                                                    <SelectValue placeholder="Selecione o programa" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className="rounded-xl border-white/50 bg-white/90 backdrop-blur-xl">
+                                                {boatPrograms.length > 0 ? (
+                                                    boatPrograms.filter(p => p.is_active).map(p => (
+                                                        <SelectItem key={p.id} value={p.id}>
+                                                            {p.name} ({p.duration_hours}h) - {p[`price_${season}`]}€
+                                                        </SelectItem>
+                                                    ))
+                                                ) : (
+                                                    <SelectItem value="none" disabled>Sem programas disponíveis</SelectItem>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage className="text-[10px]" />
+                                    </FormItem>
+                                )} />
+                                <FormField control={form.control} name="time" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Horário Específico</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 text-[#0A1F1C]" />
+                                                <Input placeholder="Ex: 10:00 - 14:00" {...field} className="pl-10 rounded-xl border-white/50 bg-white/50" />
+                                            </div>
+                                        </FormControl>
+                                        <div className="mt-3 p-4 rounded-2xl bg-[#44C3B2]/5 border border-[#44C3B2]/20 space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <p className="font-black text-[#0A1F1C] flex items-center gap-1.5 uppercase tracking-widest text-[9px] opacity-70">
+                                                    <Clock className="h-3 w-3 text-[#44C3B2]" /> Seleção Rápida
+                                                </p>
+                                                <span className="text-[9px] font-medium opacity-40 uppercase tracking-tighter">Horários Sugeridos</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <Button 
+                                                    type="button"
+                                                    variant="ghost" 
+                                                    className="h-auto py-2.5 px-3 text-[10px] justify-center border border-white/60 bg-white/60 hover:bg-[#0A1F1C] hover:text-[#44C3B2] transition-all rounded-xl font-bold shadow-sm"
+                                                    onClick={() => form.setValue("time", "10:00 - 14:00")}
+                                                >
+                                                    10h — 14h (Manhã)
+                                                </Button>
+                                                <Button 
+                                                    type="button"
+                                                    variant="ghost" 
+                                                    className="h-auto py-2.5 px-3 text-[10px] justify-center border border-white/60 bg-white/60 hover:bg-[#0A1F1C] hover:text-[#44C3B2] transition-all rounded-xl font-bold shadow-sm"
+                                                    onClick={() => form.setValue("time", "15:00 - 19:00")}
+                                                >
+                                                    15h — 19h (Tarde)
+                                                </Button>
+                                                <Button 
+                                                    type="button"
+                                                    variant="ghost" 
+                                                    className="h-auto py-2.5 px-3 text-[10px] justify-center border border-white/60 bg-white/60 hover:bg-[#0A1F1C] hover:text-[#44C3B2] transition-all rounded-xl font-bold shadow-sm"
+                                                    onClick={() => form.setValue("time", "10:00 - 18:00")}
+                                                >
+                                                    10h — 18h (8 Horas)
+                                                </Button>
+                                                <Button 
+                                                    type="button"
+                                                    variant="ghost" 
+                                                    className="h-auto py-2.5 px-3 text-[10px] justify-center border border-white/60 bg-white/60 hover:bg-[#0A1F1C] hover:text-[#44C3B2] transition-all rounded-xl font-bold shadow-sm"
+                                                    onClick={() => form.setValue("time", "19:30 - 21:30")}
+                                                >
+                                                    19h30 — 21h30 (Sunset)
+                                                </Button>
+                                                <Button 
+                                                    type="button"
+                                                    variant="ghost" 
+                                                    className="h-auto py-2.5 px-3 text-[10px] justify-center border border-white/60 bg-white/60 hover:bg-[#0A1F1C] hover:text-[#44C3B2] transition-all rounded-xl font-bold shadow-sm col-span-2"
+                                                    onClick={() => form.setValue("time", "10:00 - 16:00")}
+                                                >
+                                                    10h — 16h (Viagem 6 Horas)
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </FormItem>
+                                )} />
                                 <FormField control={form.control} name="total_amount" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Valor Total (€)</FormLabel>
@@ -511,7 +588,6 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange }
                         </div>
 
                         {/* Structured Extras Section */}
-                        {!isPartner && (
                             <div className="space-y-4 pt-2">
                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/40 flex items-center gap-2">
                                     <Plus className="h-3 w-3" /> Seleção de Atividades Extra
@@ -565,10 +641,8 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange }
                                     </div>
                                 </div>
                             </div>
-                        )}
 
-                        {!isPartner && (
-                            <div className="space-y-4 pt-2">
+                        <div className="space-y-4 pt-2">
                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/40 flex items-center gap-2">
                                     <Plus className="h-3 w-3" /> Seleção de Refeições / Catering
                                 </h4>
@@ -621,7 +695,6 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange }
                                     </div>
                                 </div>
                             </div>
-                        )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField control={form.control} name="status" render={({ field }) => (

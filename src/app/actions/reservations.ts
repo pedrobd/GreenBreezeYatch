@@ -46,8 +46,10 @@ export async function createReservationAction(values: ReservationFormValues) {
 
     if (data.program_id) {
         const { data: prog } = await adminClient.from("boat_programs").select("name").eq("id", data.program_id).single();
-        (data as any).time = prog?.name || "Custom";
-    } else {
+        if (!data.time || data.time === "") {
+            (data as any).time = prog?.name || "Custom";
+        }
+    } else if (!data.time || data.time === "") {
         (data as any).time = "Custom";
     }
 
@@ -167,8 +169,10 @@ export async function updateReservationAction(id: string, values: ReservationFor
 
     if (data.program_id) {
         const { data: prog } = await adminClient.from("boat_programs").select("name").eq("id", data.program_id).single();
-        (data as any).time = prog?.name || "Custom";
-    } else {
+        if (!data.time || data.time === "") {
+            (data as any).time = prog?.name || "Custom";
+        }
+    } else if (!data.time || data.time === "") {
         (data as any).time = "Custom";
     }
 

@@ -22,9 +22,9 @@ export function TimelineMap({ reservations, fleet }: { reservations: any[], flee
     const dailyReservations = reservations.filter(r => r.date === formattedDate && r.status !== 'Cancelado');
 
     const startHour = 8;
-    const endHour = 20;
+    const endHour = 22;
     const totalHours = endHour - startHour;
-    const hours = Array.from({ length: totalHours + 1 }, (_, i) => i + startHour); // 8:00 to 20:00
+    const hours = Array.from({ length: totalHours + 1 }, (_, i) => i + startHour); // 8:00 to 22:00
 
     const parseTime = (timeStr: string) => {
         const [h, m] = timeStr.trim().split(":").map(Number);
