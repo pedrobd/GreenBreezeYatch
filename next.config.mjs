@@ -30,7 +30,7 @@ const securityHeaders = [
     },
     {
         key: "Content-Security-Policy",
-        value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://www.google.com https://www.gstatic.com https://res.cloudinary.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://res.cloudinary.com https://gtaytqkzonbiyfmjwtbd.supabase.co https://maps.gstatic.com https://maps.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://gtaytqkzonbiyfmjwtbd.supabase.co wss://gtaytqkzonbiyfmjwtbd.supabase.co https://sandbox.sibspayments.com https://api.resend.com; frame-src https://www.google.com https://sandbox.sibspayments.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;",
+        value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://www.google.com https://www.gstatic.com https://res.cloudinary.com https://widget.cloudinary.com https://upload-widget.cloudinary.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://res.cloudinary.com https://gtaytqkzonbiyfmjwtbd.supabase.co https://maps.gstatic.com https://maps.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://gtaytqkzonbiyfmjwtbd.supabase.co wss://gtaytqkzonbiyfmjwtbd.supabase.co https://sandbox.sibspayments.com https://api.resend.com *.cloudinary.com; frame-src https://www.google.com https://sandbox.sibspayments.com https://widget.cloudinary.com https://upload-widget.cloudinary.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;",
     },
 ];
 
