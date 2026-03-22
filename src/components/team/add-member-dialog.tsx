@@ -24,7 +24,7 @@ import { UserPlus, Loader2 } from "lucide-react";
 import { createTeamMember } from "@/app/actions/team";
 import { toast } from "sonner";
 
-export function AddMemberDialog({ profiles = [] }: { profiles?: any[] }) {
+export function AddMemberDialog({ profiles = [] }: { profiles?: { id: string; full_name: string }[] }) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [role, setRole] = useState<"skipper" | "marinheiro">("skipper");
@@ -91,7 +91,7 @@ export function AddMemberDialog({ profiles = [] }: { profiles?: any[] }) {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="role" className="text-[#0A1F1C] font-semibold text-xs uppercase tracking-wider opacity-60">Função Principal</Label>
-                            <Select name="role" value={role} onValueChange={(v: any) => handleRoleChange(v)} required>
+                            <Select name="role" value={role} onValueChange={(v: "skipper" | "marinheiro") => handleRoleChange(v)} required>
                                 <SelectTrigger className="rounded-xl border-[#0A1F1C]/10 bg-white/50">
                                     <SelectValue placeholder="Selecione a função" />
                                 </SelectTrigger>

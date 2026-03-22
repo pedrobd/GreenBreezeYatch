@@ -16,8 +16,8 @@ export const foodSchema = z.object({
     category: z.string().min(1, "Categoria é obrigatória"),
     description: z.string().optional().nullable(),
     dietary_info: z.string().optional().default("Geral"),
-    stock: z.coerce.number().min(0, "O stock deve ser pelo menos 0"),
+    stock: z.union([z.string(), z.number()]).refine(val => Number(val) >= 0, "O stock deve ser pelo menos 0"),
     status: z.enum(["Disponível", "Esgotado", "Indisponível"]),
-    price: z.coerce.number().min(0, "O preço deve ser pelo menos 0"),
+    price: z.union([z.string(), z.number()]).refine(val => Number(val) >= 0, "O preço deve ser pelo menos 0"),
     image_url: z.string().optional().nullable(),
 });

@@ -41,7 +41,7 @@ export function AddFoodDialog() {
     const [loading, setLoading] = useState(false);
 
     const form = useForm<FoodFormValues>({
-        resolver: zodResolver(foodSchema) as any,
+        resolver: zodResolver(foodSchema),
         defaultValues: {
             name: "",
             category: "",

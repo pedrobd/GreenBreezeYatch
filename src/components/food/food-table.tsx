@@ -40,7 +40,7 @@ interface FoodItem {
     category: string;
     dietary_info: string;
     stock: number;
-    status: string;
+    status: "Disponível" | "Esgotado" | "Indisponível";
     price: number | string;
     image_url: string;
     sort_order?: number;
@@ -136,7 +136,7 @@ function SortableRow({ item }: { item: FoodItem }) {
                 €{Number(item.price).toFixed(2)}
             </TableCell>
             <TableCell className="py-4 px-4 text-right">
-                <FoodActionsCell item={item as any} />
+                <FoodActionsCell item={item} />
             </TableCell>
         </TableRow>
     );

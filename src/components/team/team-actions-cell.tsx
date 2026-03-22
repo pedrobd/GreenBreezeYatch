@@ -15,7 +15,7 @@ import { EditMemberDialog } from "./edit-member-dialog";
 import { deleteTeamMember } from "@/app/actions/team";
 import { toast } from "sonner";
 
-export function TeamActionsCell({ member, profiles = [] }: { member: any; profiles?: any[] }) {
+export function TeamActionsCell({ member, profiles = [] }: { member: { id: string; name: string; role: string; [key: string]: unknown }; profiles?: { id: string; full_name: string }[] }) {
     const [loading, setLoading] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
 

@@ -41,7 +41,7 @@ interface FoodItem {
     dietary_info?: string;
     stock: number;
     status: "Disponível" | "Esgotado" | "Indisponível";
-    price: number;
+    price: number | string;
     image_url?: string | null;
     description?: string | null;
 }
@@ -56,7 +56,7 @@ export function EditFoodDialog({ item, open, onOpenChange }: EditFoodDialogProps
     const [loading, setLoading] = useState(false);
 
     const form = useForm<FoodFormValues>({
-        resolver: zodResolver(foodSchema) as any,
+        resolver: zodResolver(foodSchema),
         defaultValues: {
             name: "",
             category: "",

@@ -23,7 +23,7 @@ interface FoodItem {
     dietary_info?: string;
     stock: number;
     status: "Disponível" | "Esgotado" | "Indisponível";
-    price: number;
+    price: number | string;
     image_url?: string | null;
 }
 

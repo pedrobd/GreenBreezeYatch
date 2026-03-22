@@ -29,8 +29,20 @@ export function EditMemberDialog({
     open,
     onOpenChange
 }: {
-    member: any;
-    profiles?: any[];
+    member: {
+        id: string;
+        name: string;
+        role: "skipper" | "marinheiro";
+        nif?: string;
+        user_id?: string;
+        billing_address?: string;
+        rate_sunset?: number;
+        rate_half_day?: number;
+        rate_6hour?: number;
+        rate_full_day?: number;
+        rate_extra_hour?: number;
+    };
+    profiles?: { id: string; full_name: string }[];
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }) {
@@ -93,7 +105,7 @@ export function EditMemberDialog({
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="role" className="text-[#0A1F1C] font-semibold text-xs uppercase tracking-wider opacity-60">Função Principal</Label>
-                            <Select name="role" value={role} onValueChange={(v: any) => handleRoleChange(v)} required>
+                            <Select name="role" value={role} onValueChange={(v: "skipper" | "marinheiro") => handleRoleChange(v)} required>
                                 <SelectTrigger className="rounded-xl border-[#0A1F1C]/10 bg-white/50">
                                     <SelectValue placeholder="Selecione a função" />
                                 </SelectTrigger>
