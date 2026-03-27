@@ -152,7 +152,7 @@ export function EditArticleDialog({ post, open, onOpenChange }: EditArticleDialo
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="Marina">Marina</SelectItem>
+                                                <SelectItem value="Experiências">Experiências</SelectItem>
                                                 <SelectItem value="Lifestyle">Lifestyle</SelectItem>
                                                 <SelectItem value="Eventos">Eventos</SelectItem>
                                                 <SelectItem value="Dicas">Dicas</SelectItem>

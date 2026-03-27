@@ -65,7 +65,7 @@ export function AddArticleDialog() {
             content_en: "",
             author: "GreenBreeze Admin",
             status: "Rascunho",
-            category: "Marina",
+            category: "Experiências",
             cover_image_url: "",
         },
     });
@@ -112,7 +112,7 @@ export function AddArticleDialog() {
             form.setValue("title_en", title_en || "");
             form.setValue("content", content);
             form.setValue("content_en", content_en || "");
-            form.setValue("category", category || "Marina");
+            form.setValue("category", category || "Experiências");
             form.setValue("slug", generateSlug(title));
             setIsSlugManual(false);
             toast.success("Conteúdo multilingue gerado com sucesso!");
@@ -131,7 +131,7 @@ export function AddArticleDialog() {
                 <DialogHeader className="space-y-3 text-[#0A1F1C]">
                     <DialogTitle className="text-3xl font-bold font-heading">Novo Artigo</DialogTitle>
                     <DialogDescription className="text-[#0A1F1C]/60">
-                        Crie um novo artigo para o blog ou uma notícia relevante para a Marina.
+                        Crie um novo artigo para o blog ou uma notícia relevante para a GreenBreeze.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -152,7 +152,7 @@ export function AddArticleDialog() {
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="Marina">Marina</SelectItem>
+                                                <SelectItem value="Experiências">Experiências</SelectItem>
                                                 <SelectItem value="Lifestyle">Lifestyle</SelectItem>
                                                 <SelectItem value="Eventos">Eventos</SelectItem>
                                                 <SelectItem value="Dicas">Dicas</SelectItem>
