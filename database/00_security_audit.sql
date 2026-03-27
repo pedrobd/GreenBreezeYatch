@@ -50,24 +50,41 @@ END $$;
 -- -----------------------------------------------------------------------------
 
 -- Frota (Fleet)
+ALTER TABLE public.fleet DROP CONSTRAINT IF EXISTS check_fleet_capacity;
 ALTER TABLE public.fleet ADD CONSTRAINT check_fleet_capacity CHECK (capacity > 0);
+
+ALTER TABLE public.fleet DROP CONSTRAINT IF EXISTS check_fleet_price;
 ALTER TABLE public.fleet ADD CONSTRAINT check_fleet_price CHECK (base_price >= 0);
 
 -- Menu de Comida (food_menu)
+ALTER TABLE public.food_menu DROP CONSTRAINT IF EXISTS check_food_price;
 ALTER TABLE public.food_menu ADD CONSTRAINT check_food_price CHECK (price >= 0);
+
+ALTER TABLE public.food_menu DROP CONSTRAINT IF EXISTS check_food_stock;
 ALTER TABLE public.food_menu ADD CONSTRAINT check_food_stock CHECK (stock >= 0);
 
 -- Atividades Extras (extra_activities)
+ALTER TABLE public.extra_activities DROP CONSTRAINT IF EXISTS check_extras_price;
 ALTER TABLE public.extra_activities ADD CONSTRAINT check_extras_price CHECK (price >= 0);
+
+ALTER TABLE public.extra_activities DROP CONSTRAINT IF EXISTS check_extras_stock;
 ALTER TABLE public.extra_activities ADD CONSTRAINT check_extras_stock CHECK (stock >= 0);
 
 -- Programas de Barco (boat_programs)
+ALTER TABLE public.boat_programs DROP CONSTRAINT IF EXISTS check_programs_price_l;
 ALTER TABLE public.boat_programs ADD CONSTRAINT check_programs_price_l CHECK (price_low >= 0);
+
+ALTER TABLE public.boat_programs DROP CONSTRAINT IF EXISTS check_programs_price_m;
 ALTER TABLE public.boat_programs ADD CONSTRAINT check_programs_price_m CHECK (price_mid >= 0);
+
+ALTER TABLE public.boat_programs DROP CONSTRAINT IF EXISTS check_programs_price_h;
 ALTER TABLE public.boat_programs ADD CONSTRAINT check_programs_price_h CHECK (price_high >= 0);
 
 -- Reservas (Reservations)
+ALTER TABLE public.reservations DROP CONSTRAINT IF EXISTS check_total_amount;
 ALTER TABLE public.reservations ADD CONSTRAINT check_total_amount CHECK (total_amount >= 0);
+
+ALTER TABLE public.reservations DROP CONSTRAINT IF EXISTS check_passengers;
 ALTER TABLE public.reservations ADD CONSTRAINT check_passengers CHECK (passengers_adults > 0);
 
 

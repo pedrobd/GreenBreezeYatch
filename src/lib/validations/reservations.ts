@@ -4,6 +4,7 @@ export const reservationSchema = z.object({
     client_name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
     client_email: z.string().email("E-mail inválido").optional().or(z.literal("")),
     client_phone: z.string().min(9, "Telefone inválido").optional().or(z.literal("")),
+    client_nif: z.string().optional().or(z.literal("")),
     boat_id: z.string().min(1, "Selecione um barco"),
     date: z.string().min(1, "Selecione uma data"),
     time: z.string().optional().or(z.literal("")),

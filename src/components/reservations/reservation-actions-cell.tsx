@@ -116,12 +116,16 @@ export function ReservationActionsCell({ reservation, fleet }: ReservationAction
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <EditReservationDialog
-                reservation={reservation}
-                fleet={fleet}
-                open={editOpen}
-                onOpenChange={setEditOpen}
-            />
+            {editOpen && (
+                <EditReservationDialog
+                    reservation={reservation}
+                    fleet={fleet}
+                    open={editOpen}
+                    onOpenChange={setEditOpen}
+                    availableFood={[]} // This will trigger the internal fetch in EditReservationDialog
+                    bookedDates={[]}   // This will trigger the internal fetch in EditReservationDialog
+                />
+            )}
         </>
     );
 }
