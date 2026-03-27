@@ -15,6 +15,8 @@ export const metadata: Metadata = {
     description: "Gestão de utilizadores e cargos administrativos.",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function UsersPage() {
     const { user } = await getUserProfile();
     if (user?.role !== "admin") {

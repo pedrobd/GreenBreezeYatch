@@ -23,6 +23,8 @@ export const metadata: Metadata = {
     description: "Gestão de Frota GreenBreeze",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function FleetPage() {
     const { user } = await getUserProfile();
     if (user?.role !== "admin") {

@@ -24,6 +24,8 @@ export const metadata: Metadata = {
     description: "Gestão de Conteúdos do Blog",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function BlogPage({
     searchParams,
 }: {

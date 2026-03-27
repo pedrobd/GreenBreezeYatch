@@ -15,6 +15,8 @@ export const metadata: Metadata = {
     description: "Gestão de serviços extra disponíveis para todos os barcos",
 };
 
+export const dynamic = 'force-dynamic';
+
 const ITEMS_PER_PAGE = 9;
 
 interface PageProps {

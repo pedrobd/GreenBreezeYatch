@@ -21,6 +21,8 @@ export const metadata: Metadata = {
     description: "Gestão de Atividades Extra e Equipamentos",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function ActivitiesPage() {
     // Fetch live activities from Supabase
     const { data: activities, error } = await supabase

@@ -15,6 +15,8 @@ export const metadata: Metadata = {
     description: "Gestão do Menu de Comida e Bebidas",
 };
 
+export const dynamic = 'force-dynamic';
+
 const CATEGORIES = [
     "Menus Rápidos e Individuais",
     "Tábuas e Petiscos",

@@ -8,6 +8,8 @@ import { pt } from "date-fns/locale";
 import { redirect } from "next/navigation";
 import { getUserProfile } from "@/app/actions/auth";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Dashboard() {
   const { user } = await getUserProfile();
 

@@ -14,6 +14,8 @@ export const metadata: Metadata = {
     description: "Configurações do Sistema GreenBreeze",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function SettingsPage() {
     const { user } = await getUserProfile();
     const { settings } = await getSystemSettingsAction();

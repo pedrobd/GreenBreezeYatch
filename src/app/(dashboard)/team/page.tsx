@@ -16,6 +16,8 @@ export const metadata: Metadata = {
     description: "Gestão da equipa de skippers e marinheiros.",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function TeamPage() {
     const { user } = await getUserProfile();
     if (user?.role !== "admin") {
