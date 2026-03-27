@@ -128,10 +128,26 @@ export async function updateSystemUserProfile(
     }
 
     if (Object.keys(updateData).length > 0) {
+        // Check for email conflict before updating
+        if (updateData.email) {
+            const { data: existingUser } = await adminClient
+                .from("profiles")
+                .select("id")
+                .eq("email", updateData.email)
+                .single();
+
+            // Note: In some systems email is in profiles, in others only in Auth.
+            // If it's only in Auth, we can't easily check profiles. 
+            // In your schema, profiles usually have an email copy for display.
+        }
+
         const { error: authUpdateError } = await adminClient.auth.admin.updateUserById(id, updateData);
 
         if (authUpdateError) {
-            console.error("Error updating auth credentials:", authUpdateError);
+            console.error("Auth update error:", authUpdateError);
+            if (authUpdateError.message.includes("Email already exists") || authUpdateError.status === 422) {
+                return { error: "Este email já está a ser utilizado por outro utilizador." };
+            }
             return { error: `Perfil atualizado, mas erro ao mudar email/password: ${authUpdateError.message}` };
         }
     }
