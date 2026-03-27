@@ -56,16 +56,19 @@ export async function generateBlogContentAction(theme: string) {
             Palavras-chave SEO a incluir: ${settings.seo_keywords || "marina, sustentabilidade, navegação sustentável"}.
             
             Regras de Escrita:
-            1. Usa Português de Portugal (PT-PT).
-            2. Estrutura o texto com títulos (H1 para o título, H2/H3 para seções).
-            3. Responde APENAS em formato JSON com a seguinte estrutura:
+            1. Escreve a versão principal em Português de Portugal (PT-PT).
+            2. Fornece também uma tradução profissional e fluida para Inglês (EN).
+            3. Estrutura o texto com títulos (H2/H3 para seções) em ambas as línguas.
+            4. Responde APENHAS em formato JSON com a seguinte estrutura:
                {
-                 "title": "Título sugerido do artigo",
-                 "content": "Conteúdo completo em HTML (vários parágrafos, subtítulos, etc.)",
+                 "title": "Título sugerido em PT-PT",
+                 "title_en": "Suggested title in English",
+                 "content": "Conteúdo completo em HTML (PT-PT)",
+                 "content_en": "Complete content in HTML (English)",
                  "category": "Marina, Lifestyle, Eventos ou Dicas"
                }
-            4. O conteúdo deve ser rico, detalhado e focado em SEO e GEO (LLM SEO).
-            5. Não uses blocos de código markdown (\`\`\`), envia apenas o JSON cru.
+            5. O conteúdo deve ser rico, detalhado e focado em SEO e GEO (LLM SEO).
+            6. Não uses blocos de código markdown (\`\`\`), envia apenas o JSON cru.
         `;
 
         const result = await model.generateContent(prompt);

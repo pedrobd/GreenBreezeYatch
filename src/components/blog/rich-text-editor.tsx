@@ -34,6 +34,7 @@ interface RichTextEditorProps {
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
+    minHeight?: string;
 }
 
 const MenuBar = ({ editor }: { editor: any }) => {
@@ -213,7 +214,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
     );
 };
 
-export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, placeholder, minHeight }: RichTextEditorProps) {
     const editor = useEditor({
         extensions: [
             StarterKit,
@@ -238,7 +239,8 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         },
         editorProps: {
             attributes: {
-                class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl m-5 focus:outline-none text-[#0A1F1C] min-h-[200px] max-w-full font-body",
+                class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl m-5 focus:outline-none text-[#0A1F1C] max-w-full font-body",
+                style: minHeight ? `min-height: ${minHeight}` : "min-height: 200px",
             },
         },
     });
