@@ -6,7 +6,7 @@ import Image from "next/image";
 import { CldUploadWidget } from "next-cloudinary";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, optimizeCloudinaryUrl } from "@/lib/utils";
 import { useRef } from "react";
 
 interface MultiImageUploadProps {
@@ -61,7 +61,7 @@ export function MultiImageUpload({
                                 fill
                                 className="object-cover"
                                 alt={`Gallery Image ${index + 1}`}
-                                src={url}
+                                src={optimizeCloudinaryUrl(url, 'thumb')}
                             />
                         </div>
                     ))}

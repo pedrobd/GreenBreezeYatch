@@ -6,6 +6,7 @@ import Image from "next/image";
 import { CldUploadWidget } from "next-cloudinary";
 
 import { Button } from "@/components/ui/button";
+import { optimizeCloudinaryUrl } from "@/lib/utils";
 
 interface ImageUploadProps {
     disabled?: boolean;
@@ -47,7 +48,7 @@ export function ImageUpload({
                         fill
                         className="object-cover"
                         alt="Image"
-                        src={value}
+                        src={optimizeCloudinaryUrl(value)}
                     />
                 </div>
             ) : (

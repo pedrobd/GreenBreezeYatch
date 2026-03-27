@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { optimizeCloudinaryUrl } from "@/lib/utils";
 
 import { boatProgramSchema, boatExtraSchema } from "@/lib/validations/fleet";
 import { z } from "zod";
@@ -349,7 +350,7 @@ export function BoatExtrasManager({ boatId }: { boatId: string }) {
                             <TableRow key={e.id} className="hover:bg-white/40">
                                 <TableCell className="font-medium text-xs">
                                     <div className="flex items-center gap-2">
-                                        {e.image_url ? <img src={e.image_url} alt="" className="w-6 h-6 rounded-md object-cover" /> : <div className="w-6 h-6 rounded-md bg-black/5" />}
+                                        {e.image_url ? <img src={optimizeCloudinaryUrl(e.image_url, 'thumb')} alt="" className="w-6 h-6 rounded-md object-cover" /> : <div className="w-6 h-6 rounded-md bg-black/5" />}
                                         <span>{e.name} {e.is_active ? '' : '(Inativo)'} {!e.show_in_frontoffice && <span className="text-[9px] bg-yellow-100 text-yellow-800 px-1 rounded ml-1">Oculto no Site</span>}</span>
                                     </div>
                                 </TableCell>

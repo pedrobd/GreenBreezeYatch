@@ -46,6 +46,7 @@ import { extraSchema, ExtraFormValues } from "@/lib/validations/extras";
 import { updateExtraAction, deleteExtraAction } from "@/app/actions/extras";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { RichTextEditor } from "@/components/blog/rich-text-editor";
+import { optimizeCloudinaryUrl } from "@/lib/utils";
 
 interface Extra {
     id: string;
@@ -152,7 +153,7 @@ export function ExtrasTable({ items }: ExtrasTableProps) {
                             <tr key={extra.id} className="border-b border-[#0A1F1C]/5 hover:bg-[#44C3B2]/5 transition-all">
                                 <td className="py-3 px-4">
                                     {extra.image_url ? (
-                                        <img src={extra.image_url} alt={extra.name} className="h-12 w-16 rounded-lg object-cover" />
+                                        <img src={optimizeCloudinaryUrl(extra.image_url, 'thumb')} alt={extra.name} className="h-12 w-16 rounded-lg object-cover" />
                                     ) : (
                                         <div className="h-12 w-16 rounded-lg bg-[#0A1F1C]/5 flex items-center justify-center">
                                             <span className="text-[10px] text-[#0A1F1C]/20 font-bold">N/A</span>
