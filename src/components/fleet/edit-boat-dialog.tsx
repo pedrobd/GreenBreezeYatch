@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false }) as any;
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -38,22 +38,9 @@ import { updateBoatAction } from "@/app/actions/fleet";
 import { BoatProgramsManager, BoatExtrasManager } from "./boat-pricing-managers";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { MultiImageUpload } from "@/components/ui/multi-image-upload";
+import { Boat } from "@/types/admin";
 
-interface Boat {
-    id: string;
-    name: string;
-    type: string;
-    capacity: number;
-    current_location: string;
-    status: "Disponível" | "Manutenção" | "Indisponível";
-    base_price: number;
-    image_url?: string | null;
-    is_partner?: boolean;
-    setubal_surcharge?: number;
-    description?: string | null;
-    inclusions?: string | null;
-    order_index?: number;
-}
+// Removed local Boat interface in favor of @/types/admin Boat type
 
 interface EditBoatDialogProps {
     boat: Boat;
@@ -65,14 +52,14 @@ export function EditBoatDialog({ boat, open, onOpenChange }: EditBoatDialogProps
     const [loading, setLoading] = useState(false);
 
     const form = useForm<BoatFormValues>({
-        resolver: zodResolver(boatSchema) as any,
+        resolver: zodResolver(boatSchema) as Resolver<BoatFormValues>,
         defaultValues: {
             name: "",
             type: "",
-            capacity: "",
-            current_location: "",
+            capacity: 0,
+            current_location: "Mitrena",
             status: "Disponível",
-            base_price: "",
+            base_price: undefined,
             image_url: "",
             gallery: [],
             is_partner: false,
@@ -89,14 +76,14 @@ export function EditBoatDialog({ boat, open, onOpenChange }: EditBoatDialogProps
             form.reset({
                 name: boat.name,
                 type: boat.type,
-                capacity: String(boat.capacity),
+                capacity: boat.capacity,
                 current_location: boat.current_location,
-                status: boat.status,
-                base_price: String(boat.base_price || ""),
+                status: boat.status as "Disponível" | "Manutenção" | "Indisponível",
+                base_price: boat.base_price,
                 image_url: boat.image_url || "",
-                gallery: (boat as any).gallery || [],
-                is_partner: (boat as any).is_partner || false,
-                setubal_surcharge: String((boat as any).setubal_surcharge || 50),
+                gallery: boat.gallery || [],
+                is_partner: boat.is_partner || false,
+                setubal_surcharge: boat.setubal_surcharge || 50,
                 description: boat.description || "",
                 inclusions: boat.inclusions || "",
                 order_index: boat.order_index || 0,
@@ -177,7 +164,7 @@ export function EditBoatDialog({ boat, open, onOpenChange }: EditBoatDialogProps
                                                     <Input
                                                         type="number"
                                                         {...field}
-                                                        onChange={(e) => field.onChange(e.target.value)}
+                                                        onChange={(e) => field.onChange(Number(e.target.value))}
                                                         className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]"
                                                     />
                                                 </FormControl>
@@ -195,7 +182,7 @@ export function EditBoatDialog({ boat, open, onOpenChange }: EditBoatDialogProps
                                                     <Input
                                                         type="number"
                                                         {...field}
-                                                        onChange={(e) => field.onChange(e.target.value)}
+                                                        onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
                                                         className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]"
                                                     />
                                                 </FormControl>
@@ -238,7 +225,7 @@ export function EditBoatDialog({ boat, open, onOpenChange }: EditBoatDialogProps
                                                     <Input
                                                         type="number"
                                                         {...field}
-                                                        onChange={(e) => field.onChange(e.target.value)}
+                                                        onChange={(e) => field.onChange(Number(e.target.value))}
                                                         className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]"
                                                     />
                                                 </FormControl>
@@ -256,7 +243,7 @@ export function EditBoatDialog({ boat, open, onOpenChange }: EditBoatDialogProps
                                                     <Input
                                                         type="number"
                                                         {...field}
-                                                        onChange={(e) => field.onChange(e.target.value)}
+                                                        onChange={(e) => field.onChange(Number(e.target.value))}
                                                         className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]"
                                                     />
                                                 </FormControl>
@@ -328,9 +315,9 @@ export function EditBoatDialog({ boat, open, onOpenChange }: EditBoatDialogProps
                                                     <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/50">Galeria</FormLabel>
                                                     <FormControl>
                                                         <MultiImageUpload
-                                                            value={field.value || []}
-                                                            onChange={(urls) => field.onChange(urls)}
-                                                            onRemove={(urlToRemove) => field.onChange(field.value.filter((url) => url !== urlToRemove))}
+                                                             value={field.value || []}
+                                                             onChange={(urls) => field.onChange(urls)}
+                                                             onRemove={(urlToRemove) => field.onChange((field.value || []).filter((url) => url !== urlToRemove))}
                                                             disabled={loading}
                                                         />
                                                     </FormControl>

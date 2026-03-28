@@ -68,7 +68,7 @@ interface AddReservationDialogProps {
 export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [bookedDates, setBookedDates] = useState<Date[]>([]);
+    const [bookedDates, setBookedDates] = useState<string[]>([]);
     const [availableFood, setAvailableFood] = useState<FoodItem[]>([]);
     const [team, setTeam] = useState<TeamMember[]>([]);
     const [rates, setRates] = useState<StaffRate[]>([]);
@@ -76,20 +76,10 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
 
     useEffect(() => {
         if (open) {
-            getReservationDatesAction().then((result) => {
-                if (result.data) {
-                    setBookedDates(result.data.map((d: string) => new Date(d)));
-                }
-            });
-            getFoodMenuAction().then((result) => {
-                if (result.data) setAvailableFood(result.data);
-            });
-            getTeamMembers().then((result) => {
-                if (result.team) setTeam(result.team);
-            });
-            getStaffRates().then((result) => {
-                if (result.rates) setRates(result.rates);
-            });
+            getReservationDatesAction().then((result) => setBookedDates(result.data || []));
+            getFoodMenuAction().then((result) => setAvailableFood((result.data as FoodItem[]) || []));
+            getTeamMembers().then((result) => setTeam('team' in result ? result.team as TeamMember[] : []));
+            getStaffRates().then((result) => setRates('rates' in result ? result.rates as StaffRate[] : []));
         }
     }, [open]);
 
@@ -145,7 +135,7 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
         selectedBoardingLocation,
         totalPassengers,
         isPartner,
-        selectedBoat,
+        selectedBoat: selectedBoat ?? null,
         availableFood,
         enabled: open
     });
@@ -190,7 +180,7 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                 </DialogHeader>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-6 pt-4 text-[#0A1F1C]">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4 text-[#0A1F1C]">
                         {/* Client Info Section */}
                         <div className="space-y-4">
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/40 flex items-center gap-2">

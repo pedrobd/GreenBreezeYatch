@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false }) as any;
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -48,14 +48,14 @@ export function AddBoatDialog() {
     const [activeTab, setActiveTab] = useState("detalhes");
 
     const form = useForm<BoatFormValues>({
-        resolver: zodResolver(boatSchema) as any,
+        resolver: zodResolver(boatSchema) as Resolver<BoatFormValues>,
         defaultValues: {
             name: "",
             type: "",
-            capacity: "",
+            capacity: 0,
             current_location: "Mitrena",
             status: "Disponível",
-            base_price: "",
+            base_price: undefined,
             image_url: "",
             gallery: [],
             is_partner: false,
@@ -75,11 +75,10 @@ export function AddBoatDialog() {
             toast.error(result.error);
         } else {
             toast.success("Embarcação adicionada com sucesso! Prossiga para configurar os programas.");
-            if (result.id) {
+            if ('id' in result && result.id) {
                 setCreatedBoatId(result.id);
                 setActiveTab("programas");
             }
-            // form.reset(); // Don't reset yet to allow programs/extras
         }
     }
 
@@ -310,7 +309,7 @@ export function AddBoatDialog() {
                                                         <MultiImageUpload
                                                             value={field.value || []}
                                                             onChange={(urls) => field.onChange(urls)}
-                                                            onRemove={(urlToRemove) => field.onChange(field.value.filter((url) => url !== urlToRemove))}
+                                                            onRemove={(urlToRemove) => field.onChange((field.value || []).filter((url) => url !== urlToRemove))}
                                                             disabled={loading || !!createdBoatId}
                                                         />
                                                     </FormControl>

@@ -5,10 +5,18 @@ export type { ReservationFormValues };
 export interface Boat {
   id: string;
   name: string;
+  type: string;
   capacity: number;
   current_location: string;
+  status: "Disponível" | "Manutenção" | "Indisponível";
+  base_price: number;
+  image_url?: string | null;
+  gallery?: string[];
   is_partner?: boolean;
   setubal_surcharge?: number;
+  description?: string | null;
+  inclusions?: string | null;
+  order_index?: number;
 }
 
 export interface BoatProgram {
