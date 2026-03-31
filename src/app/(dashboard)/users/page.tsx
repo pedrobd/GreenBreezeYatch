@@ -84,8 +84,7 @@ export default async function UsersPage() {
                                                         <span className="font-bold text-[#0A1F1C]">{profile.full_name}</span>
                                                         <span className="text-xs text-[#0A1F1C]/60 flex items-center gap-1">
                                                             <Mail className="h-3 w-3" />
-                                                            {/* User email would usually be here but requires Auth join or metadata sync */}
-                                                            {profile.id === "123" ? "ADMIN ACCOUNT" : "Utilizador Ativo"}
+                                                            {profile.email || "Sem email"}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -106,7 +105,7 @@ export default async function UsersPage() {
                                                 <UserActionsCell
                                                     userId={profile.id}
                                                     currentRole={profile.role}
-                                                    email={profile.id === "SYSTEM_ID" ? "info@greenbreeze.pt" : ""} // Logic for protected main admin
+                                                    email={profile.email || (profile.id === "SYSTEM_ID" ? "info@greenbreeze.pt" : "")} 
                                                     fullName={profile.full_name || "Utilizador Desconhecido"}
                                                 />
                                             </td>

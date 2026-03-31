@@ -12,6 +12,8 @@ export async function getProfiles() {
     }
 
     const supabase = await createClient();
+    const adminClient = await createAdminClient();
+    
     const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -22,7 +24,20 @@ export async function getProfiles() {
         return { error: "Erro ao carregar utilizadores." };
     }
 
-    return { profiles: data };
+    // Fetch auth users to get emails
+    const { data: authData, error: authListError } = await adminClient.auth.admin.listUsers();
+    
+    const authMap = new Map();
+    if (!authListError && authData?.users) {
+        authData.users.forEach(u => authMap.set(u.id, u.email));
+    }
+
+    const mergedProfiles = data?.map(p => ({
+        ...p,
+        email: authMap.get(p.id) || ""
+    }));
+
+    return { profiles: mergedProfiles };
 }
 
 export async function createSystemUser(formData: FormData) {
