@@ -78,7 +78,11 @@ export function ImageUpload({
                 >
                     {({ open }) => {
                         const onClick = () => {
-                            open();
+                            try {
+                                if (open) open();
+                            } catch (err) {
+                                console.error('Cloudinary upload widget error:', err);
+                            }
                         };
 
                         return (

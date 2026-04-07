@@ -3,20 +3,26 @@ import { getBoatProgramsAction, getBoatExtrasAction } from "@/app/actions/fleet"
 import { getExtrasAction } from "@/app/actions/extras";
 import { getExtraActivitiesAction } from "@/app/actions/reservations";
 import { UseFormReturn } from "react-hook-form";
-import { ReservationFormValues } from "@/lib/validations/reservations";
+import { ReservationFormValues, Boat, BoatProgram, BoatExtra, FoodItem } from "@/types/admin";
+
+/** Minimal shape of a selected activity or food item in the form. */
+interface SelectedItem {
+    id: string;
+    quantity: number;
+}
 
 interface UseReservationPricingProps {
     form: UseFormReturn<ReservationFormValues>;
     selectedBoatId: string;
     selectedDate: string;
     selectedProgramId: string;
-    selectedActivities: any[];
-    selectedFood: any[];
+    selectedActivities: SelectedItem[];
+    selectedFood: SelectedItem[];
     selectedBoardingLocation: string;
     totalPassengers: number;
     isPartner: boolean;
-    selectedBoat: any;
-    availableFood: any[];
+    selectedBoat: Boat | null;
+    availableFood: FoodItem[];
     enabled?: boolean;
     isEdit?: boolean;
 }
@@ -36,8 +42,8 @@ export function useReservationPricing({
     enabled = true,
     isEdit = false
 }: UseReservationPricingProps) {
-    const [boatPrograms, setBoatPrograms] = useState<any[]>([]);
-    const [boatExtras, setBoatExtras] = useState<any[]>([]);
+    const [boatPrograms, setBoatPrograms] = useState<BoatProgram[]>([]);
+    const [boatExtras, setBoatExtras] = useState<BoatExtra[]>([]);
     const [season, setSeason] = useState<'low' | 'mid' | 'high'>('low');
     const [isInitialized, setIsInitialized] = useState(false);
     const isFirstCalculation = useRef(true);
@@ -61,18 +67,18 @@ export function useReservationPricing({
     useEffect(() => {
         if (!enabled) return;
         if (selectedBoatId) {
-            getBoatProgramsAction(selectedBoatId).then(res => setBoatPrograms(res.data || []));
-            
+            getBoatProgramsAction(selectedBoatId).then(res => setBoatPrograms((res.data as BoatProgram[]) || []));
+
             // Fetch all types of extras: boat-specific, global extras, and extra activities
             Promise.all([
                 getBoatExtrasAction(selectedBoatId),
                 getExtrasAction(),
                 getExtraActivitiesAction()
             ]).then(([boatRes, globalRes, activityRes]) => {
-                const combined = [
-                    ...(boatRes.data || []),
-                    ...(globalRes.data || []),
-                    ...(activityRes.data || [])
+                const combined: BoatExtra[] = [
+                    ...((boatRes.data as BoatExtra[]) || []),
+                    ...((globalRes.data as BoatExtra[]) || []),
+                    ...((activityRes.data as BoatExtra[]) || [])
                 ];
                 setBoatExtras(combined);
             });
@@ -90,17 +96,18 @@ export function useReservationPricing({
         if ([5, 6, 7, 8].includes(month)) s = 'high';
         else if ([3, 4, 9].includes(month)) s = 'mid';
         setSeason(s);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         form.setValue("season_applied" as any, s);
     }, [selectedDate, form, enabled]);
 
     // Auto-calculate total amount and VAT
     useEffect(() => {
         if (!enabled) return;
-        
+
         // Don't recalculate if we are waiting for boat-specific data
-        const isDataLoaded = (selectedProgramId ? boatPrograms.length > 0 : true) && 
+        const isDataLoaded = (selectedProgramId ? boatPrograms.length > 0 : true) &&
                             (selectedActivities.length > 0 ? (boatExtras.length > 0) : true);
-        
+
         if (!isDataLoaded) return;
 
         const program = boatPrograms.find(p => p.id === selectedProgramId);
@@ -108,7 +115,9 @@ export function useReservationPricing({
         let vatBase = 0;
 
         if (program) {
-            baseGross = program[`price_${season}`] || 0;
+            // Safe access using season string
+            const priceKey = `price_${season}` as keyof BoatProgram;
+            baseGross = (program[priceKey] as number) || 0;
             const vatRate = program.vat_rate || 23;
             vatBase = baseGross - (baseGross / (1 + (vatRate / 100)));
         }
@@ -119,7 +128,7 @@ export function useReservationPricing({
         let extrasGross = 0;
         let vatExtras = 0;
 
-        selectedActivities.forEach((curr: any) => {
+        selectedActivities.forEach((curr) => {
             const extra = boatExtras.find(e => e.id === curr.id);
             if (extra) {
                 const isPerPerson = extra.pricing_type === 'per_person';
@@ -131,7 +140,7 @@ export function useReservationPricing({
             }
         });
 
-        selectedFood.forEach((curr: any) => {
+        selectedFood.forEach((curr) => {
             const food = availableFood.find(f => f.id === curr.id);
             const gross = (food?.price || 0) * curr.quantity;
             extrasGross += gross;
@@ -144,17 +153,16 @@ export function useReservationPricing({
         const newVatExtras = Number(vatExtras.toFixed(2));
         const newTotal = baseGross + extrasGross;
 
-        // In edit mode, we ONLY update the form values if the user has manually changed a price-impacting field.
-        // This prevents overwriting custom prices or handles the lag of loading data.
+        // In edit mode, ONLY update if the user has manually changed a price-impacting field.
         const { dirtyFields } = form.formState;
         const isDirty = (
-            dirtyFields.boat_id || 
-            dirtyFields.program_id || 
-            dirtyFields.date || 
-            dirtyFields.selected_activities || 
-            dirtyFields.selected_food || 
-            dirtyFields.boarding_location || 
-            dirtyFields.passengers_adults || 
+            dirtyFields.boat_id ||
+            dirtyFields.program_id ||
+            dirtyFields.date ||
+            dirtyFields.selected_activities ||
+            dirtyFields.selected_food ||
+            dirtyFields.boarding_location ||
+            dirtyFields.passengers_adults ||
             dirtyFields.passengers_children ||
             dirtyFields.extra_hours
         );
@@ -164,7 +172,7 @@ export function useReservationPricing({
         }
 
         const currentValues = form.getValues();
-        
+
         if (currentValues.subtotal_amount !== newSubtotal) form.setValue("subtotal_amount", newSubtotal, { shouldDirty: false });
         if (currentValues.extras_amount !== newExtras) form.setValue("extras_amount", newExtras, { shouldDirty: false });
         if (currentValues.vat_base_amount !== newVatBase) form.setValue("vat_base_amount", newVatBase, { shouldDirty: false });
@@ -172,22 +180,22 @@ export function useReservationPricing({
         if (currentValues.total_amount !== newTotal) form.setValue("total_amount", newTotal, { shouldDirty: false });
 
     }, [
-        selectedBoatId, 
-        selectedProgramId, 
-        season, 
-        JSON.stringify(selectedActivities), 
-        JSON.stringify(selectedFood), 
-        selectedBoardingLocation, 
-        boatPrograms, 
-        boatExtras, 
-        availableFood, 
-        form, 
-        isPartner, 
-        totalPassengers, 
+        selectedBoatId,
+        selectedProgramId,
+        season,
+        JSON.stringify(selectedActivities),
+        JSON.stringify(selectedFood),
+        selectedBoardingLocation,
+        boatPrograms,
+        boatExtras,
+        availableFood,
+        form,
+        isPartner,
+        totalPassengers,
         selectedBoat,
         enabled,
         isEdit,
-        form.formState.dirtyFields // Add dirtyFields to dependencies
+        form.formState.dirtyFields
     ]);
 
     return { boatPrograms, boatExtras, season };

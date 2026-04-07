@@ -35,7 +35,6 @@ export const reservationSchema = z.object({
     client_country: z.string().optional().or(z.literal("")).default("Portugal"),
     payment_method: z.string().optional().or(z.literal("")),
     payment_status: z.string().optional().or(z.literal("")),
-    sibs_reference: z.string().optional().or(z.literal("")),
 });
 
 export type ReservationFormValues = z.infer<typeof reservationSchema>;

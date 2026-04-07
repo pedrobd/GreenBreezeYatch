@@ -64,10 +64,10 @@ export function StaffAssignmentSection({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={control} name="skipper_id" render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Skipper</FormLabel>
+                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Skipper</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value || "none"}>
                             <FormControl>
-                                <SelectTrigger className="rounded-xl border-white/50 bg-white/50">
+                                <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                             </FormControl>
@@ -83,10 +83,10 @@ export function StaffAssignmentSection({
                 )} />
                 <FormField control={control} name="marinheiro_id" render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Marinheiro</FormLabel>
+                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Marinheiro</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value || "none"}>
                             <FormControl>
-                                <SelectTrigger className="rounded-xl border-white/50 bg-white/50">
+                                <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                             </FormControl>
@@ -101,9 +101,9 @@ export function StaffAssignmentSection({
                     </FormItem>
                 )} />
                 <FormField control={control} name="extra_hours" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50 flex items-center gap-1">
-                            <Clock className="h-2 w-2" /> Horas Extra
+                    <FormItem className="md:col-span-2">
+                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70 flex items-center gap-1">
+                            <Clock className="h-2 w-2" /> Horas Extra (Ajuste Manual)
                         </FormLabel>
                         <FormControl>
                             <Input 
@@ -111,26 +111,29 @@ export function StaffAssignmentSection({
                                 step="0.5" 
                                 {...field} 
                                 onChange={e => field.onChange(Number(e.target.value))}
-                                className="rounded-xl border-white/50 bg-white/50" 
+                                className="max-w-[150px]"
                             />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
                     </FormItem>
                 )} />
 
-                <div className="md:col-span-2 p-3 rounded-2xl bg-[#44C3B2]/5 border border-[#44C3B2]/20 flex items-center justify-between mt-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/40">Pagamento Estimado</span>
+                <div className="md:col-span-2 p-4 rounded-2xl bg-[#44C3B2]/5 border border-[#44C3B2]/20 flex items-center justify-between mt-2 shadow-sm">
+                    <div className="flex flex-col gap-1">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Estimativa de Pagamento</span>
+                        <span className="text-[8px] opacity-40 uppercase">Calculado com base no programa e horas extra</span>
+                    </div>
                     <div className="flex gap-4">
                         {skipperId && skipperId !== "none" && (
-                            <div className="flex items-center gap-1.5">
-                                <Badge variant="outline" className="text-[9px] px-1 h-4 bg-[#0A1F1C]/5 font-black uppercase">S</Badge>
-                                <span className="text-xs font-bold text-[#0A1F1C]">€{skipperPayout}</span>
+                            <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-xl border border-white/60 shadow-sm">
+                                <Badge variant="outline" className="text-[9px] px-1 h-4 bg-[#0A1F1C]/10 border-none font-black uppercase">Skipper</Badge>
+                                <span className="text-sm font-bold text-[#0A1F1C]">€{skipperPayout}</span>
                             </div>
                         )}
                         {marinheiroId && marinheiroId !== "none" && (
-                            <div className="flex items-center gap-1.5">
-                                <Badge variant="outline" className="text-[9px] px-1 h-4 bg-[#44C3B2]/10 font-black uppercase">M</Badge>
-                                <span className="text-xs font-bold text-[#0A1F1C]">€{marinheiroPayout}</span>
+                            <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-xl border border-white/60 shadow-sm">
+                                <Badge variant="outline" className="text-[9px] px-1 h-4 bg-[#44C3B2]/20 border-none font-black uppercase">Marinheiro</Badge>
+                                <span className="text-sm font-bold text-[#0A1F1C]">€{marinheiroPayout}</span>
                             </div>
                         )}
                     </div>

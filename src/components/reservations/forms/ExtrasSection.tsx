@@ -41,7 +41,7 @@ export function ExtrasSection({
                             setValue("selected_activities", [...selectedActivities, { id: val, quantity: 1 }]);
                         }
                     }}>
-                        <SelectTrigger className="rounded-xl border-white/50 bg-white/50">
+                        <SelectTrigger>
                             <SelectValue placeholder="Adicionar Extra..." />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-white/50 bg-white/90 backdrop-blur-xl">
@@ -95,7 +95,7 @@ export function ExtrasSection({
                             setValue("selected_food", [...selectedFood, { id: val, quantity: 1 }]);
                         }
                     }}>
-                        <SelectTrigger className="rounded-xl border-white/50 bg-white/50">
+                        <SelectTrigger>
                             <SelectValue placeholder="Adicionar Refeição..." />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-white/50 bg-white/90 backdrop-blur-xl">

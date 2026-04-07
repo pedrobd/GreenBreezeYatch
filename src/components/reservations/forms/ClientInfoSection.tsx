@@ -26,10 +26,10 @@ export function ClientInfoSection() {
           name="client_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome do Cliente</FormLabel>
+              <FormLabel className="font-bold text-[#0A1F1C]/70">Nome do Cliente</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <User className="absolute left-3 top-2.5 h-4 w-4 text-[#0A1F1C]/40" />
                   <Input placeholder="Nome completo" className="pl-9" {...field} />
                 </div>
               </FormControl>
@@ -42,10 +42,10 @@ export function ClientInfoSection() {
           name="client_email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="font-bold text-[#0A1F1C]/70">Email</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-[#0A1F1C]/40" />
                   <Input type="email" placeholder="exemplo@email.com" className="pl-9" {...field} />
                 </div>
               </FormControl>
@@ -58,10 +58,10 @@ export function ClientInfoSection() {
           name="client_phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Telefone</FormLabel>
+              <FormLabel className="font-bold text-[#0A1F1C]/70">Telefone</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Phone className="absolute left-3 top-2.5 h-4 w-4 text-[#0A1F1C]/40" />
                   <Input placeholder="+351 900 000 000" className="pl-9" {...field} />
                 </div>
               </FormControl>
@@ -74,10 +74,10 @@ export function ClientInfoSection() {
           name="client_nif"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>NIF (Opcional)</FormLabel>
+              <FormLabel className="font-bold text-[#0A1F1C]/70">NIF (Opcional)</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <FileText className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <FileText className="absolute left-3 top-2.5 h-4 w-4 text-[#0A1F1C]/40" />
                   <Input placeholder="999999999" className="pl-9" {...field} />
                 </div>
               </FormControl>
@@ -90,7 +90,7 @@ export function ClientInfoSection() {
           name="client_country"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>País</FormLabel>
+              <FormLabel className="font-bold text-[#0A1F1C]/70">País</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>

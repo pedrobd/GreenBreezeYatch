@@ -4,8 +4,20 @@ import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { reservationSchema, ReservationFormValues } from "@/lib/validations/reservations";
 import { revalidatePath } from "next/cache";
-import { sendReservationEmails } from "@/app/actions/emails";
-import { initiateSibsPayment } from "@/utils/sibs";
+import { sendReservationEmails, sendCancellationEmail } from "@/app/actions/emails";
+
+/** Local type that reflects the DB shape (nullable FKs + optional time). */
+type ReservationData = Omit<ReservationFormValues, "selected_activities" | "selected_food" | "skipper_id" | "marinheiro_id" | "program_id"> & {
+    time?: string;
+    skipper_id?: string | null;
+    marinheiro_id?: string | null;
+    program_id?: string | null;
+};
+
+/** Booking conflict row returned by the availability check. */
+interface BookingSlot {
+    time?: string | null;
+}
 
 export async function getExtraActivitiesAction() {
     const supabase = await createClient();
@@ -36,21 +48,22 @@ export async function createReservationAction(values: ReservationFormValues) {
     }
 
     const adminClient = createAdminClient();
-    const { selected_activities, selected_food, sibs_reference, ...reservationData } = validatedFields.data;
+    const { selected_activities, selected_food, ...reservationData } = validatedFields.data;
 
-    const data = { ...reservationData };
+    const data: ReservationData = { ...reservationData };
 
-    if (data.skipper_id === "" || data.skipper_id === "none") data.skipper_id = null as any;
-    if (data.marinheiro_id === "" || data.marinheiro_id === "none") data.marinheiro_id = null as any;
-    if (data.program_id === "") data.program_id = null as any;
+    // Normalize empty FK strings to null (DB expects null for unset FKs)
+    if (!data.skipper_id || data.skipper_id === "none") data.skipper_id = null;
+    if (!data.marinheiro_id || data.marinheiro_id === "none") data.marinheiro_id = null;
+    if (!data.program_id) data.program_id = null;
 
     if (data.program_id) {
         const { data: prog } = await adminClient.from("boat_programs").select("name").eq("id", data.program_id).single();
         if (!data.time || data.time === "") {
-            (data as any).time = prog?.name || "Custom";
+            data.time = prog?.name || "Custom";
         }
     } else if (!data.time || data.time === "") {
-        (data as any).time = "Custom";
+        data.time = "Custom";
     }
 
     if (data.status !== "Cancelado") {
@@ -62,24 +75,24 @@ export async function createReservationAction(values: ReservationFormValues) {
             .neq("status", "Cancelado");
 
         if (existing && existing.length > 0) {
-            const timeStr = (data as any).time;
+            const timeStr = data.time ?? "";
             const newTime = timeStr.toLowerCase().trim();
             const isNewFullDay = newTime.includes('1 dia') || newTime.includes('dia todo') || newTime.includes('dia inteiro');
-            
-            const hasExistingFullDay = existing.some((r: any) => 
+
+            const hasExistingFullDay = (existing as BookingSlot[]).some(r =>
                 r.time && (r.time.toLowerCase().includes('1 dia') || r.time.toLowerCase().includes('dia todo') || r.time.toLowerCase().includes('dia inteiro'))
             );
 
             if (hasExistingFullDay) {
                 return { error: "O barco já está reservado para o dia inteiro nesta data." };
             }
-            
+
             if (isNewFullDay && existing.length > 0) {
                 return { error: "Já existem reservas neste barco para esta data. Não é possível reservar o dia inteiro." };
             }
 
-            const exactMatches = existing.filter((r: any) => r.time && r.time.toLowerCase().trim() === newTime);
-            
+            const exactMatches = (existing as BookingSlot[]).filter(r => r.time && r.time.toLowerCase().trim() === newTime);
+
             if (exactMatches.length > 0) {
                 if (newTime === '1/2 dia' && exactMatches.length === 1) {
                     if (existing.length >= 2) {
@@ -99,7 +112,6 @@ export async function createReservationAction(values: ReservationFormValues) {
         return { error: error.message || "Erro ao criar reserva." };
     }
 
-    // Insert extras into junction tables
     if (selected_activities && selected_activities.length > 0) {
         const activitiesToInsert = selected_activities.map(a => ({
             reservation_id: res.id,
@@ -117,7 +129,7 @@ export async function createReservationAction(values: ReservationFormValues) {
         }));
         await adminClient.from("reservation_food").insert(foodToInsert);
     }
-    // Send confirmation emails
+
     try {
         const { data: boat } = await adminClient.from("fleet").select("name").eq("id", data.boat_id).single();
         let programName = "Programa Custom";
@@ -159,21 +171,22 @@ export async function updateReservationAction(id: string, values: ReservationFor
         return { error: "Não autorizado." };
     }
 
-    const { selected_activities, selected_food, sibs_reference, ...reservationData } = validatedFields.data;
-    const data = { ...reservationData };
-    if (data.skipper_id === "" || data.skipper_id === "none") data.skipper_id = null as any;
-    if (data.marinheiro_id === "" || data.marinheiro_id === "none") data.marinheiro_id = null as any;
-    if (data.program_id === "") data.program_id = null as any;
+    const { selected_activities, selected_food, ...reservationData } = validatedFields.data;
+    const data: ReservationData = { ...reservationData };
+
+    if (!data.skipper_id || data.skipper_id === "none") data.skipper_id = null;
+    if (!data.marinheiro_id || data.marinheiro_id === "none") data.marinheiro_id = null;
+    if (!data.program_id) data.program_id = null;
 
     const adminClient = createAdminClient();
 
     if (data.program_id) {
         const { data: prog } = await adminClient.from("boat_programs").select("name").eq("id", data.program_id).single();
         if (!data.time || data.time === "") {
-            (data as any).time = prog?.name || "Custom";
+            data.time = prog?.name || "Custom";
         }
     } else if (!data.time || data.time === "") {
-        (data as any).time = "Custom";
+        data.time = "Custom";
     }
 
     if (data.status !== "Cancelado") {
@@ -186,24 +199,24 @@ export async function updateReservationAction(id: string, values: ReservationFor
             .neq("id", id);
 
         if (existing && existing.length > 0) {
-            const timeStr = (data as any).time;
+            const timeStr = data.time ?? "";
             const newTime = timeStr.toLowerCase().trim();
             const isNewFullDay = newTime.includes('1 dia') || newTime.includes('dia todo') || newTime.includes('dia inteiro');
-            
-            const hasExistingFullDay = existing.some((r: any) => 
+
+            const hasExistingFullDay = (existing as BookingSlot[]).some(r =>
                 r.time && (r.time.toLowerCase().includes('1 dia') || r.time.toLowerCase().includes('dia todo') || r.time.toLowerCase().includes('dia inteiro'))
             );
 
             if (hasExistingFullDay) {
                 return { error: "O barco já está reservado para o dia inteiro nesta data." };
             }
-            
+
             if (isNewFullDay && existing.length > 0) {
                 return { error: "Já existem reservas neste barco para esta data. Não é possível reservar o dia inteiro." };
             }
 
-            const exactMatches = existing.filter((r: any) => r.time && r.time.toLowerCase().trim() === newTime);
-            
+            const exactMatches = (existing as BookingSlot[]).filter(r => r.time && r.time.toLowerCase().trim() === newTime);
+
             if (exactMatches.length > 0) {
                 if (newTime === '1/2 dia' && exactMatches.length === 1) {
                     if (existing.length >= 2) {
@@ -226,7 +239,6 @@ export async function updateReservationAction(id: string, values: ReservationFor
         return { error: error.message || "Erro ao atualizar reserva." };
     }
 
-    // Sync extras: Delete existing and insert new
     await adminClient.from("reservation_activities").delete().eq("reservation_id", id);
     if (selected_activities && selected_activities.length > 0) {
         const activitiesToInsert = selected_activities.map(a => ({
@@ -271,6 +283,72 @@ export async function deleteReservationAction(id: string) {
     return { success: true };
 }
 
+export async function cancelReservationAction(id: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { error: "Não autorizado." };
+    }
+
+    const adminClient = createAdminClient();
+
+    // 1. Fetch data before update
+    const { data: res, error: fetchError } = await adminClient
+        .from("reservations")
+        .select(`
+            id,
+            client_name,
+            client_email,
+            date,
+            boat_id
+        `)
+        .eq("id", id)
+        .single();
+
+    if (fetchError) {
+        console.error("Fetch error before cancellation:", fetchError);
+    }
+
+    // Update status
+    const { error: updateError } = await adminClient
+        .from("reservations")
+        .update({ status: "Cancelado" })
+        .eq("id", id);
+
+    if (updateError) {
+        console.error("Supabase error cancelling reservation:", updateError);
+        return { error: updateError.message || "Erro ao cancelar reserva." };
+    }
+
+    // 2. Send cancellation email synchronously
+    if (res) {
+        try {
+            // Optional: Get boat name separately to avoid join issues
+            const { data: boat } = await adminClient.from("fleet").select("name").eq("id", res.boat_id).single();
+            
+            console.log("Triggering cancellation email for:", res.client_email);
+            
+            const emailResult = await sendCancellationEmail({
+                id: res.id,
+                client_name: res.client_name,
+                client_email: res.client_email,
+                date: res.date,
+                boat_name: boat?.name || "Barco GreenBreeze"
+            });
+            
+            console.log("Email result:", emailResult);
+        } catch (emailError) {
+            console.error("Error sending cancellation email:", emailError);
+        }
+    } else {
+        console.warn("Could not find reservation data to send cancellation email.");
+    }
+
+    revalidatePath("/reservations");
+    return { success: true };
+}
+
 export async function getReservationDatesAction() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -290,46 +368,7 @@ export async function getReservationDatesAction() {
         return { error: error.message || "Erro ao buscar datas de reserva." };
     }
 
-    const dates = data.map((d: any) => d.date);
+    const dates = data.map(d => d.date);
     return { data: dates };
 }
 
-export async function initiateReservationPaymentAction(reservationId: string) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return { error: "Não autorizado." };
-    }
-
-    const adminClient = createAdminClient();
-    const { data: reservation, error } = await adminClient
-        .from("reservations")
-        .select("*, fleet(name)")
-        .eq("id", reservationId)
-        .single();
-
-    if (error || !reservation) {
-        return { error: "Reserva não encontrada." };
-    }
-
-    const paymentResult = await initiateSibsPayment({
-        amount: reservation.total_amount,
-        currency: "EUR",
-        merchantReference: reservation.id,
-        description: `Reserva GreenBreeze - ${reservation.fleet?.name || 'Barco'} - ${reservation.date}`,
-        returnUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reservations?payment=success`,
-    });
-
-    if (!paymentResult.success) {
-        return { error: paymentResult.error || "Erro ao iniciar pagamento SIBS." };
-    }
-
-    // Update reservation with SIBS payment ID (sibs_reference)
-    await adminClient
-        .from("reservations")
-        .update({ sibs_reference: paymentResult.paymentId })
-        .eq("id", reservationId);
-
-    return { success: true, redirectUrl: paymentResult.redirectUrl };
-}

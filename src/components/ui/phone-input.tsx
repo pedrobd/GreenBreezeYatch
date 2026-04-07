@@ -74,7 +74,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
         return (
             <div className={cn("flex gap-2 w-full", className)}>
                 <Select value={prefix} onValueChange={handlePrefixChange}>
-                    <SelectTrigger className="w-[110px] h-10 rounded-xl border-white/50 bg-white/50 focus:ring-[#44C3B2] px-3 shadow-none text-xs">
+                    <SelectTrigger className="w-[110px] h-10 px-3 shadow-none text-xs">
                         <SelectValue placeholder="+351" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-white/50 bg-white/90 backdrop-blur-xl max-h-[250px] overflow-y-auto">
@@ -90,7 +90,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
                     ref={ref}
                     value={number}
                     onChange={handleNumberChange}
-                    className="flex-1 rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2] h-10 shadow-none text-sm"
+                    className="flex-1 focus-visible:ring-[#44C3B2] h-10 shadow-none text-sm"
                     placeholder="Número"
                     {...props}
                 />

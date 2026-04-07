@@ -107,7 +107,6 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
             extra_hours: 0,
             payment_method: "",
             payment_status: "Pendente",
-            sibs_reference: "",
         },
     });
 
@@ -191,9 +190,9 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                     name="client_name"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Nome Completo</FormLabel>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Nome Completo</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Ex: João Silva" {...field} className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]" />
+                                                <Input placeholder="Ex: João Silva" {...field} className="focus-visible:ring-[#44C3B2]" />
                                             </FormControl>
                                             <FormMessage className="text-[10px]" />
                                         </FormItem>
@@ -203,9 +202,9 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                     name="client_email"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">E-mail</FormLabel>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">E-mail</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="cliente@email.com" {...field} className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]" />
+                                                <Input placeholder="cliente@email.com" {...field} className="focus-visible:ring-[#44C3B2]" />
                                             </FormControl>
                                             <FormMessage className="text-[10px]" />
                                         </FormItem>
@@ -215,7 +214,7 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                     name="client_phone"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Telemóvel</FormLabel>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Telemóvel</FormLabel>
                                             <FormControl>
                                                 <PhoneInput {...field} />
                                             </FormControl>
@@ -227,9 +226,9 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                     name="client_address"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Morada</FormLabel>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Morada</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Rua, Número, Andar..." {...field} className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]" />
+                                                <Input placeholder="Rua, Número, Andar..." {...field} className="focus-visible:ring-[#44C3B2]" />
                                             </FormControl>
                                             <FormMessage className="text-[10px]" />
                                         </FormItem>
@@ -239,10 +238,10 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                     name="client_country"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">País</FormLabel>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">País</FormLabel>
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
-                                                    <SelectTrigger className="rounded-xl border-white/50 bg-white/50 focus:ring-[#44C3B2]">
+                                                    <SelectTrigger className="focus:ring-[#44C3B2]">
                                                         <SelectValue placeholder="Selecione o país" />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -288,10 +287,10 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                 name="status"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Estado</FormLabel>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Estado</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                                <SelectTrigger className="rounded-xl border-white/50 bg-white/50 focus:ring-[#44C3B2]">
+                                                <SelectTrigger className="focus:ring-[#44C3B2]">
                                                     <SelectValue placeholder="Selecione o estado" />
                                                 </SelectTrigger>
                                             </FormControl>
@@ -309,9 +308,9 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                 name="notes"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Notas / Observações</FormLabel>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Notas / Observações</FormLabel>
                                         <FormControl>
-                                            <Textarea placeholder="Detalhes adicionais..." {...field} className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2] min-h-[40px]" />
+                                            <Textarea placeholder="Detalhes adicionais..." {...field} className="focus-visible:ring-[#44C3B2] min-h-[40px]" />
                                         </FormControl>
                                         <FormMessage className="text-[10px]" />
                                     </FormItem>
@@ -324,10 +323,10 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                 name="payment_method"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Método de Pagamento</FormLabel>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Método de Pagamento</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                                <SelectTrigger className="rounded-xl border-white/50 bg-white/50 focus:ring-[#44C3B2]">
+                                                <SelectTrigger className="focus:ring-[#44C3B2]">
                                                     <SelectValue placeholder="Selecione o método" />
                                                 </SelectTrigger>
                                             </FormControl>
@@ -337,7 +336,6 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                                 <SelectItem value="Transferência">Transferência</SelectItem>
                                                 <SelectItem value="Numerário">Numerário / Loja</SelectItem>
                                                 <SelectItem value="Cartão">Cartão Crédito/Débito</SelectItem>
-                                                <SelectItem value="SIBS">SIBS (Online)</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormMessage className="text-[10px]" />
@@ -348,10 +346,10 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                 name="payment_status"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Estado do Pagamento</FormLabel>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Estado do Pagamento</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                                <SelectTrigger className="rounded-xl border-white/50 bg-white/50 focus:ring-[#44C3B2]">
+                                                <SelectTrigger className="focus:ring-[#44C3B2]">
                                                     <SelectValue placeholder="Estado..." />
                                                 </SelectTrigger>
                                             </FormControl>
