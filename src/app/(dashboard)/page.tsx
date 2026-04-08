@@ -20,11 +20,19 @@ export default async function Dashboard() {
   const supabase = createAdminClient();
 
   if (!supabase) {
+    const missingVars = [];
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) missingVars.push("NEXT_PUBLIC_SUPABASE_URL");
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) missingVars.push("SUPABASE_SERVICE_ROLE_KEY");
+
     return (
       <div className="flex h-[50vh] flex-col items-center justify-center space-y-4 text-center">
         <h2 className="text-2xl font-bold text-[#0A1F1C]">Conectividade em Falta</h2>
         <p className="max-w-md text-muted-foreground">
-          Não foi possível ligar à base de dados. Verifique se as variáveis de ambiente (URL e SERVICE_ROLE_KEY) estão configuradas na Vercel.
+          Faltam as seguintes variáveis na Vercel: <br/>
+          <span className="font-mono text-xs text-red-500 font-bold">{missingVars.join(", ") || "Nenhuma detectada"}</span>
+        </p>
+        <p className="text-xs text-muted-foreground mt-4">
+          Certifique-se que adicionou estas chaves nas **Settings &gt; Environment Variables** do projeto e fez um **Redeploy**.
         </p>
       </div>
     );
