@@ -41,7 +41,7 @@ export async function createReservationAction(values: ReservationFormValues) {
     }
 
     const adminClient = createAdminClient();
-    const { selected_food, ...reservationData } = validatedFields.data;
+    const { selected_food, selected_extras, ...reservationData } = validatedFields.data;
 
     const data: ReservationData = { ...reservationData };
 
@@ -114,6 +114,15 @@ export async function createReservationAction(values: ReservationFormValues) {
         await adminClient.from("reservation_food").insert(foodToInsert);
     }
 
+    if (selected_extras && selected_extras.length > 0) {
+        const activitiesToInsert = selected_extras.map(e => ({
+            reservation_id: res.id,
+            activity_id: e.id,
+            quantity: e.quantity
+        }));
+        await adminClient.from("reservation_activities").insert(activitiesToInsert);
+    }
+
     try {
         const { data: boat } = await adminClient.from("fleet").select("name").eq("id", data.boat_id).single();
         let programName = "Programa Custom";
@@ -155,7 +164,7 @@ export async function updateReservationAction(id: string, values: ReservationFor
         return { error: "Não autorizado." };
     }
 
-    const { selected_food, ...reservationData } = validatedFields.data;
+    const { selected_food, selected_extras, ...reservationData } = validatedFields.data;
     const data: ReservationData = { ...reservationData };
 
     if (!data.skipper_id || data.skipper_id === "none") data.skipper_id = null;
@@ -234,6 +243,15 @@ export async function updateReservationAction(id: string, values: ReservationFor
             quantity: f.quantity
         }));
         await adminClient.from("reservation_food").insert(foodToInsert);
+    }
+
+    if (selected_extras && selected_extras.length > 0) {
+        const activitiesToInsert = selected_extras.map(e => ({
+            reservation_id: id,
+            activity_id: e.id,
+            quantity: e.quantity
+        }));
+        await adminClient.from("reservation_activities").insert(activitiesToInsert);
     }
 
     revalidatePath("/reservations");
