@@ -35,8 +35,8 @@ export function ImageUpload({
         onChange(result.info.secure_url);
     };
 
-    // Cloudinary Config with hardcoded fallback for GreenBreeze
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dfm0ofp9v";
+    // Cloudinary Config with hardcoded fallback for GreenBreeze (Corrected: dzkvvnnge)
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dzkvvnnge";
     const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "greenbreeze_uploads";
 
     if (!isMounted) {
