@@ -100,7 +100,7 @@ export function AddBoatDialog() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[1200px] rounded-3xl border-white/50 bg-white/70 backdrop-blur-2xl shadow-2xl p-8 font-body border max-h-[90vh] overflow-y-auto">
                 <DialogHeader className="space-y-3">
-                    <DialogTitle className="text-3xl font-bold font-heading text-[#0A1F1C]">Nova Embarcação v1.0.2</DialogTitle>
+                    <DialogTitle className="text-3xl font-bold font-heading text-[#0A1F1C]">Nova Embarcação v1.0.4</DialogTitle>
                     <DialogDescription className="text-[#0A1F1C]/60">
                         Insira os detalhes técnicos para registar uma nova embarcação na frota GreenBreeze.
                     </DialogDescription>
