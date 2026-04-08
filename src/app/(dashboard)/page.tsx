@@ -20,12 +20,15 @@ export default async function Dashboard() {
   const supabase = createAdminClient();
 
   if (!supabase) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SERVICE_ROLE_KEY;
+
     const envData = {
-      URL_EXISTS: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      URL_LEN: process.env.NEXT_PUBLIC_SUPABASE_URL?.length || 0,
-      SERVICE_KEY_EXISTS: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-      SERVICE_KEY_LEN: process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0,
-      ANON_KEY_EXISTS: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      URL: !!supabaseUrl,
+      URL_LEN: supabaseUrl?.length || 0,
+      SERVICE_KEY: !!supabaseServiceKey,
+      SERVICE_KEY_LEN: supabaseServiceKey?.length || 0,
+      ANON_KEY: !!(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY),
       NODE_ENV: process.env.NODE_ENV,
       VERCEL_ENV: process.env.VERCEL_ENV || "N/A"
     };

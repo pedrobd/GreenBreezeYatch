@@ -1,11 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 
 export const createAdminClient = () => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY_SECRET || process.env.SERVICE_ROLE_KEY
 
     if (!supabaseUrl || !supabaseServiceKey) {
-        console.error("CRITICAL: Supabase Admin environment variables (URL/SERVICE_KEY) are missing!")
+        console.error("CRITICAL: Supabase Admin environment variables (URL/SERVICE_KEY) are missing!", {
+            url: !!supabaseUrl,
+            key: !!supabaseServiceKey
+        })
         return null as any; 
     }
 
