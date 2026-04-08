@@ -19,6 +19,17 @@ export default async function Dashboard() {
 
   const supabase = createAdminClient();
 
+  if (!supabase) {
+    return (
+      <div className="flex h-[50vh] flex-col items-center justify-center space-y-4 text-center">
+        <h2 className="text-2xl font-bold text-[#0A1F1C]">Conectividade em Falta</h2>
+        <p className="max-w-md text-muted-foreground">
+          Não foi possível ligar à base de dados. Verifique se as variáveis de ambiente (URL e SERVICE_ROLE_KEY) estão configuradas na Vercel.
+        </p>
+      </div>
+    );
+  }
+
   // Fetch basic stats
   const { count: pendingReservations } = await supabase
     .from('reservations')
