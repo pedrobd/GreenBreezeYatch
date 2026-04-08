@@ -35,26 +35,12 @@ export function ImageUpload({
         onChange(result.info.secure_url);
     };
 
+    // Cloudinary Config with hardcoded fallback for GreenBreeze
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dfm0ofp9v";
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "greenbreeze_uploads";
+
     if (!isMounted) {
         return null;
-    }
-
-    // Safety check for Cloudinary Cloud Name (v2 - forced refresh)
-    if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
-        return (
-            <div className="space-y-4">
-                <Button
-                    type="button"
-                    disabled
-                    variant="outline"
-                    className="w-full rounded-2xl border-dashed border-2 border-red-200 bg-red-50/50 text-red-600 h-32 flex flex-col items-center justify-center gap-2 cursor-not-allowed"
-                >
-                    <ImagePlus className="h-8 w-8 opacity-50" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Configuração Cloudinary em Falta</span>
-                    <span className="text-[8px] font-medium opacity-70">Defina NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME na Vercel</span>
-                </Button>
-            </div>
-        );
     }
 
     return (
