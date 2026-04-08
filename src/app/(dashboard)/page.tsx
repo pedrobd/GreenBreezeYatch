@@ -20,20 +20,40 @@ export default async function Dashboard() {
   const supabase = createAdminClient();
 
   if (!supabase) {
-    const missingVars = [];
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) missingVars.push("NEXT_PUBLIC_SUPABASE_URL");
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) missingVars.push("SUPABASE_SERVICE_ROLE_KEY");
+    const envData = {
+      URL_EXISTS: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      URL_LEN: process.env.NEXT_PUBLIC_SUPABASE_URL?.length || 0,
+      SERVICE_KEY_EXISTS: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      SERVICE_KEY_LEN: process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0,
+      ANON_KEY_EXISTS: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL_ENV: process.env.VERCEL_ENV || "N/A"
+    };
 
     return (
-      <div className="flex h-[50vh] flex-col items-center justify-center space-y-4 text-center">
-        <h2 className="text-2xl font-bold text-[#0A1F1C]">Conectividade em Falta</h2>
-        <p className="max-w-md text-muted-foreground">
-          Faltam as seguintes variáveis na Vercel: <br/>
-          <span className="font-mono text-xs text-red-500 font-bold">{missingVars.join(", ") || "Nenhuma detectada"}</span>
-        </p>
-        <p className="text-xs text-muted-foreground mt-4">
-          Certifique-se que adicionou estas chaves nas **Settings &gt; Environment Variables** do projeto e fez um **Redeploy**.
-        </p>
+      <div className="flex h-[80vh] flex-col items-center justify-center space-y-6 text-center p-6">
+        <div className="space-y-2">
+            <h2 className="text-3xl font-bold text-[#0A1F1C]">Erro de Configuração</h2>
+            <p className="max-w-md text-muted-foreground mx-auto">
+              O servidor Next.js não está a conseguir ler as chaves da Vercel.
+            </p>
+        </div>
+
+        <div className="w-full max-w-lg bg-red-50 border border-red-200 rounded-2xl p-6 text-left font-mono text-xs">
+            <p className="font-bold text-red-600 mb-4 border-bottom border-red-100 pb-2">DIAGNÓSTICO TÉCNICO:</p>
+            <pre className="space-y-1">
+                {JSON.stringify(envData, null, 2)}
+            </pre>
+        </div>
+
+        <div className="space-y-4">
+            <p className="text-sm font-medium text-amber-600">⚠️ Atenção: Vi um ícone de alerta cor-de-laranja nos teus prints da Vercel.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Clica nesse ícone na Vercel para ver o aviso. Garante que as chaves não têm espaços invisíveis no início ou fim.
+              <br/><br/>
+              <strong>Passo de Limpeza:</strong> Tenta apagar a `NEXT_PUBLIC_SUPABASE_URL` na Vercel e criá-la de novo (Add), escrevendo o nome à mão. Desta vez, faz **Redeploy SEM usar Cache**.
+            </p>
+        </div>
       </div>
     );
   }
