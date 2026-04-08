@@ -19,6 +19,16 @@ import { optimizeCloudinaryUrl } from "@/lib/utils";
 import { boatProgramSchema, boatExtraSchema } from "@/lib/validations/fleet";
 import { z } from "zod";
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
     createBoatProgramAction, updateBoatProgramAction, deleteBoatProgramAction, getBoatProgramsAction,
     createBoatExtraAction, updateBoatExtraAction, deleteBoatExtraAction, getBoatExtrasAction
 } from "@/app/actions/fleet";
@@ -30,6 +40,7 @@ export function BoatProgramsManager({ boatId }: { boatId: string }) {
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isCreating, setIsCreating] = useState(false);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const form = useForm<z.infer<typeof boatProgramSchema>>({
         resolver: zodResolver(boatProgramSchema) as any,
@@ -79,12 +90,13 @@ export function BoatProgramsManager({ boatId }: { boatId: string }) {
         }
     }
 
-    async function handleDelete(id: string) {
-        if (!confirm("Tem a certeza que deseja eliminar este programa?")) return;
-        const res = await deleteBoatProgramAction(id);
+    async function handleDelete() {
+        if (!deleteId) return;
+        const res = await deleteBoatProgramAction(deleteId);
         if (res.error) toast.error(res.error);
         else {
             toast.success("Programa eliminado.");
+            setDeleteId(null);
             loadPrograms();
         }
     }
@@ -104,36 +116,42 @@ export function BoatProgramsManager({ boatId }: { boatId: string }) {
                 <div className="bg-white/50 border border-white/50 rounded-2xl p-4 shadow-sm animate-in fade-in zoom-in duration-300">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <FormField control={form.control} name="name" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Nome do Programa (Ex: Meio Dia)</FormLabel>
+                                    <FormControl><Input {...field} className="h-8 text-xs bg-white/50 border-white/50" /></FormControl>
+                                </FormItem>
+                            )} />
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="name" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Nome (Ex: Sunset 3H)</FormLabel>
-                                        <FormControl><Input {...field} className="h-8 text-xs bg-white/50 border-white/50" /></FormControl>
-                                    </FormItem>
-                                )} />
                                 <FormField control={form.control} name="duration_hours" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">Duração (Horas)</FormLabel>
-                                        <FormControl><Input type="number" step="0.5" {...field} className="h-8 text-xs bg-white/50 border-white/50" /></FormControl>
+                                        <FormControl><Input type="number" {...field} className="h-8 text-xs bg-white/50 border-white/50" /></FormControl>
+                                    </FormItem>
+                                )} />
+                                <FormField control={form.control} name="vat_rate" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">IVA (%)</FormLabel>
+                                        <FormControl><Input type="number" {...field} className="h-8 text-xs bg-white/50 border-white/50" /></FormControl>
                                     </FormItem>
                                 )} />
                             </div>
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-3 gap-2">
                                 <FormField control={form.control} name="price_low" render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">É. Baixa (€)</FormLabel>
+                                        <FormLabel className="text-[8px] font-black uppercase tracking-widest opacity-50">Época Baixa</FormLabel>
                                         <FormControl><Input type="number" {...field} className="h-8 text-xs bg-white/50 border-white/50" /></FormControl>
                                     </FormItem>
                                 )} />
                                 <FormField control={form.control} name="price_mid" render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">É. Média (€)</FormLabel>
+                                        <FormLabel className="text-[8px] font-black uppercase tracking-widest opacity-50">Época Média</FormLabel>
                                         <FormControl><Input type="number" {...field} className="h-8 text-xs bg-white/50 border-white/50" /></FormControl>
                                     </FormItem>
                                 )} />
                                 <FormField control={form.control} name="price_high" render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-50">É. Alta (€)</FormLabel>
+                                        <FormLabel className="text-[8px] font-black uppercase tracking-widest opacity-50">Época Alta</FormLabel>
                                         <FormControl><Input type="number" {...field} className="h-8 text-xs bg-white/50 border-white/50" /></FormControl>
                                     </FormItem>
                                 )} />
@@ -151,9 +169,9 @@ export function BoatProgramsManager({ boatId }: { boatId: string }) {
                 <Table>
                     <TableHeader className="bg-white/40">
                         <TableRow>
-                            <TableHead className="text-[10px] font-black uppercase opacity-50">Nome</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase opacity-50">Duração</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase opacity-50">B/M/A (€)</TableHead>
+                            <TableHead className="text-[10px] font-black uppercase opacity-50">Programa</TableHead>
+                            <TableHead className="text-[10px] font-black uppercase opacity-50 text-center">Horas</TableHead>
+                            <TableHead className="text-[10px] font-black uppercase opacity-50">Preços (B/M/A)</TableHead>
                             <TableHead className="text-right text-[10px] font-black uppercase opacity-50">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -165,12 +183,12 @@ export function BoatProgramsManager({ boatId }: { boatId: string }) {
                         ) : programs.map(p => (
                             <TableRow key={p.id} className="hover:bg-white/40">
                                 <TableCell className="font-medium text-xs">{p.name} {p.is_active ? '' : '(Inativo)'}</TableCell>
-                                <TableCell className="text-xs">{p.duration_hours}h</TableCell>
-                                <TableCell className="text-xs">{p.price_low} / {p.price_mid} / {p.price_high}</TableCell>
+                                <TableCell className="text-center text-xs">{p.duration_hours}h</TableCell>
+                                <TableCell className="text-xs font-mono">{p.price_low}€ / {p.price_mid}€ / {p.price_high}€</TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex justify-end gap-1">
                                         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => startEdit(p)}><Edit2 className="h-3 w-3" /></Button>
-                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDelete(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setDeleteId(p.id)}><Trash2 className="h-3 w-3" /></Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -178,6 +196,21 @@ export function BoatProgramsManager({ boatId }: { boatId: string }) {
                     </TableBody>
                 </Table>
             </div>
+
+            <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+                <AlertDialogContent className="rounded-3xl border-white/50 bg-white/80 backdrop-blur-2xl shadow-2xl p-8 border">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl font-bold font-heading text-[#0A1F1C]">Eliminar Programa?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-[#0A1F1C]/60 text-base leading-relaxed">
+                            Tem a certeza que deseja eliminar este programa? Esta ação não pode ser revertida.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-8 gap-3">
+                        <AlertDialogCancel className="h-12 rounded-2xl border-none bg-white/40 px-6 font-bold text-[#0A1F1C] hover:bg-white/60 transition-all">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={(e) => { e.preventDefault(); handleDelete(); }} className="h-12 rounded-2xl bg-red-600 px-6 font-bold text-white hover:bg-red-700 transition-all">Eliminar permanentemente</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
@@ -189,6 +222,7 @@ export function BoatExtrasManager({ boatId }: { boatId: string }) {
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isCreating, setIsCreating] = useState(false);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const form = useForm<z.infer<typeof boatExtraSchema>>({
         resolver: zodResolver(boatExtraSchema) as any,
@@ -237,12 +271,13 @@ export function BoatExtrasManager({ boatId }: { boatId: string }) {
         }
     }
 
-    async function handleDelete(id: string) {
-        if (!confirm("Tem a certeza que deseja eliminar este extra?")) return;
-        const res = await deleteBoatExtraAction(id);
+    async function handleDelete() {
+        if (!deleteId) return;
+        const res = await deleteBoatExtraAction(deleteId);
         if (res.error) toast.error(res.error);
         else {
             toast.success("Extra eliminado.");
+            setDeleteId(null);
             loadExtras();
         }
     }
@@ -359,7 +394,7 @@ export function BoatExtrasManager({ boatId }: { boatId: string }) {
                                 <TableCell className="text-right">
                                     <div className="flex justify-end gap-1">
                                         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => startEdit(e)}><Edit2 className="h-3 w-3" /></Button>
-                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDelete(e.id)}><Trash2 className="h-3 w-3" /></Button>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setDeleteId(e.id)}><Trash2 className="h-3 w-3" /></Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -367,6 +402,21 @@ export function BoatExtrasManager({ boatId }: { boatId: string }) {
                     </TableBody>
                 </Table>
             </div>
+
+            <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+                <AlertDialogContent className="rounded-3xl border-white/50 bg-white/80 backdrop-blur-2xl shadow-2xl p-8 border">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl font-bold font-heading text-[#0A1F1C]">Eliminar Extra?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-[#0A1F1C]/60 text-base leading-relaxed">
+                            Tem a certeza que deseja eliminar este extra? Esta ação não pode ser revertida.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-8 gap-3">
+                        <AlertDialogCancel className="h-12 rounded-2xl border-none bg-white/40 px-6 font-bold text-[#0A1F1C] hover:bg-white/60 transition-all">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={(e) => { e.preventDefault(); handleDelete(); }} className="h-12 rounded-2xl bg-red-600 px-6 font-bold text-white hover:bg-red-700 transition-all">Eliminar permanentemente</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

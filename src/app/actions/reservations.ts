@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { sendReservationEmails, sendCancellationEmail } from "@/app/actions/emails";
 
 /** Local type that reflects the DB shape (nullable FKs + optional time). */
-type ReservationData = Omit<ReservationFormValues, "selected_activities" | "selected_food" | "skipper_id" | "marinheiro_id" | "program_id"> & {
+type ReservationData = Omit<ReservationFormValues, "selected_extras" | "selected_food" | "skipper_id" | "marinheiro_id" | "program_id"> & {
     time?: string;
     skipper_id?: string | null;
     marinheiro_id?: string | null;
@@ -17,13 +17,6 @@ type ReservationData = Omit<ReservationFormValues, "selected_activities" | "sele
 /** Booking conflict row returned by the availability check. */
 interface BookingSlot {
     time?: string | null;
-}
-
-export async function getExtraActivitiesAction() {
-    const supabase = await createClient();
-    const { data, error } = await supabase.from("extra_activities").select("*").order("name");
-    if (error) return { error: error.message };
-    return { data };
 }
 
 export async function getFoodMenuAction() {
@@ -48,7 +41,7 @@ export async function createReservationAction(values: ReservationFormValues) {
     }
 
     const adminClient = createAdminClient();
-    const { selected_activities, selected_food, ...reservationData } = validatedFields.data;
+    const { selected_food, ...reservationData } = validatedFields.data;
 
     const data: ReservationData = { ...reservationData };
 
@@ -99,26 +92,17 @@ export async function createReservationAction(values: ReservationFormValues) {
                         return { error: "O barco já atingiu o limite de reservas parciais para esta data." };
                     }
                 } else {
-                    return { error: `Já existe uma reserva para o horário selecionado ("${timeStr}") nesta data.` };
+                    return { error: `Este horário (${data.time}) já está ocupado por outra reserva.` };
                 }
             }
         }
     }
 
-    const { data: res, error } = await adminClient.from("reservations").insert([data]).select().single();
+    const { data: res, error } = await adminClient.from("reservations").insert(data).select().single();
 
     if (error) {
         console.error("Supabase error creating reservation:", error);
         return { error: error.message || "Erro ao criar reserva." };
-    }
-
-    if (selected_activities && selected_activities.length > 0) {
-        const activitiesToInsert = selected_activities.map(a => ({
-            reservation_id: res.id,
-            activity_id: a.id,
-            quantity: a.quantity
-        }));
-        await adminClient.from("reservation_activities").insert(activitiesToInsert);
     }
 
     if (selected_food && selected_food.length > 0) {
@@ -171,7 +155,7 @@ export async function updateReservationAction(id: string, values: ReservationFor
         return { error: "Não autorizado." };
     }
 
-    const { selected_activities, selected_food, ...reservationData } = validatedFields.data;
+    const { selected_food, ...reservationData } = validatedFields.data;
     const data: ReservationData = { ...reservationData };
 
     if (!data.skipper_id || data.skipper_id === "none") data.skipper_id = null;
@@ -239,15 +223,8 @@ export async function updateReservationAction(id: string, values: ReservationFor
         return { error: error.message || "Erro ao atualizar reserva." };
     }
 
+    // Clear old activities if any
     await adminClient.from("reservation_activities").delete().eq("reservation_id", id);
-    if (selected_activities && selected_activities.length > 0) {
-        const activitiesToInsert = selected_activities.map(a => ({
-            reservation_id: id,
-            activity_id: a.id,
-            quantity: a.quantity
-        }));
-        await adminClient.from("reservation_activities").insert(activitiesToInsert);
-    }
 
     await adminClient.from("reservation_food").delete().eq("reservation_id", id);
     if (selected_food && selected_food.length > 0) {
@@ -364,7 +341,7 @@ export async function getReservationDatesAction() {
         return { error: error.message || "Erro ao buscar datas de reserva." };
     }
 
-    const dates = data.map(d => d.date);
+    const dates = data.map((d: { date: string | null }) => d.date).filter(Boolean) as string[];
     return { data: dates };
 }
 

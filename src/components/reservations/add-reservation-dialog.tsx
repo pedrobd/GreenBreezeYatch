@@ -45,7 +45,6 @@ import { reservationSchema } from "@/lib/validations/reservations";
 import {
     createReservationAction,
     getReservationDatesAction,
-    getExtraActivitiesAction,
     getFoodMenuAction
 } from "@/app/actions/reservations";
 import { getBoatProgramsAction, getBoatExtrasAction } from "@/app/actions/fleet";
@@ -95,7 +94,7 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
             status: "Pendente",
             total_amount: 0,
             notes: "",
-            selected_activities: [],
+            selected_extras: [],
             selected_food: [],
             boarding_location: "Mitrena",
             passengers_adults: 1,
@@ -117,7 +116,7 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
     const selectedBoardingLocation = useWatch({ control: form.control, name: "boarding_location" }) as string;
     const passengersAdults = useWatch({ control: form.control, name: "passengers_adults" }) as number;
     const passengersChildren = useWatch({ control: form.control, name: "passengers_children" }) as number;
-    const selectedActivities = (useWatch({ control: form.control, name: "selected_activities" }) || []) as NonNullable<ReservationFormValues["selected_activities"]>;
+    const selectedExtras = (useWatch({ control: form.control, name: "selected_extras" }) || []) as NonNullable<ReservationFormValues["selected_extras"]>;
     const selectedFood = (useWatch({ control: form.control, name: "selected_food" }) || []) as NonNullable<ReservationFormValues["selected_food"]>;
 
     const selectedBoat = fleet.find(b => b.id === selectedBoatId);
@@ -129,7 +128,7 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
         selectedBoatId,
         selectedDate,
         selectedProgramId,
-        selectedActivities,
+        selectedExtras,
         selectedFood,
         selectedBoardingLocation,
         totalPassengers,

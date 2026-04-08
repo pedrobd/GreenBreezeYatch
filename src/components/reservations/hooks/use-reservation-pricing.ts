@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { getBoatProgramsAction, getBoatExtrasAction } from "@/app/actions/fleet";
 import { getExtrasAction } from "@/app/actions/extras";
-import { getExtraActivitiesAction } from "@/app/actions/reservations";
 import { UseFormReturn } from "react-hook-form";
 import { ReservationFormValues, Boat, BoatProgram, BoatExtra, FoodItem } from "@/types/admin";
 
@@ -16,7 +15,7 @@ interface UseReservationPricingProps {
     selectedBoatId: string;
     selectedDate: string;
     selectedProgramId: string;
-    selectedActivities: SelectedItem[];
+    selectedExtras: SelectedItem[];
     selectedFood: SelectedItem[];
     selectedBoardingLocation: string;
     totalPassengers: number;
@@ -32,7 +31,7 @@ export function useReservationPricing({
     selectedBoatId,
     selectedDate,
     selectedProgramId,
-    selectedActivities,
+    selectedExtras,
     selectedFood,
     selectedBoardingLocation,
     totalPassengers,
@@ -69,16 +68,14 @@ export function useReservationPricing({
         if (selectedBoatId) {
             getBoatProgramsAction(selectedBoatId).then(res => setBoatPrograms((res.data as BoatProgram[]) || []));
 
-            // Fetch all types of extras: boat-specific, global extras, and extra activities
+            // Fetch all types of extras: boat-specific and global extras
             Promise.all([
                 getBoatExtrasAction(selectedBoatId),
-                getExtrasAction(),
-                getExtraActivitiesAction()
-            ]).then(([boatRes, globalRes, activityRes]) => {
+                getExtrasAction()
+            ]).then(([boatRes, globalRes]) => {
                 const combined: BoatExtra[] = [
                     ...((boatRes.data as BoatExtra[]) || []),
-                    ...((globalRes.data as BoatExtra[]) || []),
-                    ...((activityRes.data as BoatExtra[]) || [])
+                    ...((globalRes.data as BoatExtra[]) || [])
                 ];
                 setBoatExtras(combined);
             });
@@ -105,8 +102,7 @@ export function useReservationPricing({
         if (!enabled) return;
 
         // Don't recalculate if we are waiting for boat-specific data
-        const isDataLoaded = (selectedProgramId ? boatPrograms.length > 0 : true) &&
-                            (selectedActivities.length > 0 ? (boatExtras.length > 0) : true);
+        const isDataLoaded = (selectedProgramId ? boatPrograms.length > 0 : true);
 
         if (!isDataLoaded) return;
 
@@ -128,7 +124,8 @@ export function useReservationPricing({
         let extrasGross = 0;
         let vatExtras = 0;
 
-        selectedActivities.forEach((curr) => {
+        // Calculate Extras (merged activities and boat extras)
+        selectedExtras.forEach((curr) => {
             const extra = boatExtras.find(e => e.id === curr.id);
             if (extra) {
                 const isPerPerson = extra.pricing_type === 'per_person';
@@ -140,6 +137,7 @@ export function useReservationPricing({
             }
         });
 
+        // Calculate Food items
         selectedFood.forEach((curr) => {
             const food = availableFood.find(f => f.id === curr.id);
             const gross = (food?.price || 0) * curr.quantity;
@@ -159,7 +157,7 @@ export function useReservationPricing({
             dirtyFields.boat_id ||
             dirtyFields.program_id ||
             dirtyFields.date ||
-            dirtyFields.selected_activities ||
+            dirtyFields.selected_extras ||
             dirtyFields.selected_food ||
             dirtyFields.boarding_location ||
             dirtyFields.passengers_adults ||
@@ -167,23 +165,22 @@ export function useReservationPricing({
             dirtyFields.extra_hours
         );
 
-        if (isEdit && !isDirty) {
-            return;
+        if (isEdit) {
+            if (!isDirty && !isFirstCalculation.current) return;
         }
 
-        const currentValues = form.getValues();
+        form.setValue("subtotal_amount", newSubtotal);
+        form.setValue("extras_amount", newExtras);
+        form.setValue("vat_base_amount", newVatBase);
+        form.setValue("vat_extras_amount", newVatExtras);
+        form.setValue("total_amount", newTotal);
 
-        if (currentValues.subtotal_amount !== newSubtotal) form.setValue("subtotal_amount", newSubtotal, { shouldDirty: false });
-        if (currentValues.extras_amount !== newExtras) form.setValue("extras_amount", newExtras, { shouldDirty: false });
-        if (currentValues.vat_base_amount !== newVatBase) form.setValue("vat_base_amount", newVatBase, { shouldDirty: false });
-        if (currentValues.vat_extras_amount !== newVatExtras) form.setValue("vat_extras_amount", newVatExtras, { shouldDirty: false });
-        if (currentValues.total_amount !== newTotal) form.setValue("total_amount", newTotal, { shouldDirty: false });
-
+        isFirstCalculation.current = false;
     }, [
         selectedBoatId,
         selectedProgramId,
         season,
-        JSON.stringify(selectedActivities),
+        JSON.stringify(selectedExtras),
         JSON.stringify(selectedFood),
         selectedBoardingLocation,
         boatPrograms,

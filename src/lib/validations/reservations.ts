@@ -20,7 +20,7 @@ export const reservationSchema = z.object({
     skipper_id: z.string().optional().or(z.literal("")),
     marinheiro_id: z.string().optional().or(z.literal("")),
     extra_hours: z.coerce.number().min(0).optional().default(0),
-    selected_activities: z.array(z.object({
+    selected_extras: z.array(z.object({
         id: z.string(),
         quantity: z.number().min(1)
     })).optional().default([]),

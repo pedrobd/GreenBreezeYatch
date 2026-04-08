@@ -13,6 +13,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { EditBoatDialog } from "./edit-boat-dialog";
 import { deleteBoatAction } from "@/app/actions/fleet";
@@ -34,15 +44,19 @@ interface FleetActionsCellProps {
 
 export function FleetActionsCell({ boat }: FleetActionsCellProps) {
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     async function onDelete() {
-        if (confirm(`Tem a certeza que deseja eliminar a embarcação ${boat.name}?`)) {
-            const result = await deleteBoatAction(boat.id);
-            if (result.error) {
-                toast.error(result.error);
-            } else {
-                toast.success("Embarcação eliminada.");
-            }
+        setIsLoading(true);
+        const result = await deleteBoatAction(boat.id);
+        setIsLoading(false);
+
+        if (result.error) {
+            toast.error(result.error);
+        } else {
+            toast.success("Embarcação eliminada.");
+            setIsDeleteOpen(false);
         }
     }
 
@@ -66,7 +80,7 @@ export function FleetActionsCell({ boat }: FleetActionsCellProps) {
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
-                        onClick={() => setIsEditOpen(true)}
+                        onSelect={() => setIsEditOpen(true)}
                         className="rounded-xl px-3 py-2 cursor-pointer focus:bg-[#0A1F1C] focus:text-[#44C3B2]"
                     >
                         <Pencil className="mr-2 h-4 w-4 opacity-50" />
@@ -81,7 +95,7 @@ export function FleetActionsCell({ boat }: FleetActionsCellProps) {
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
-                        onClick={onDelete}
+                        onSelect={() => setIsDeleteOpen(true)}
                         className="rounded-xl px-3 py-2 cursor-pointer focus:bg-red-500 focus:text-white transition-colors"
                     >
                         <Trash2 className="mr-2 h-4 w-4 opacity-50" />
@@ -95,6 +109,32 @@ export function FleetActionsCell({ boat }: FleetActionsCellProps) {
                 open={isEditOpen}
                 onOpenChange={setIsEditOpen}
             />
+
+            <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                <AlertDialogContent className="rounded-3xl border-white/50 bg-white/80 backdrop-blur-2xl shadow-2xl p-8 border font-body">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl font-bold font-heading text-[#0A1F1C]">Eliminar Embarcação?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-[#0A1F1C]/60 text-base leading-relaxed">
+                            Tens a certeza que desejas eliminar permanentemente a embarcação <span className="font-bold text-[#0A1F1C]">"{boat.name}"</span>? Esta ação removerá o barco de todos os registos futuros.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-8 gap-3">
+                        <AlertDialogCancel className="h-12 rounded-2xl border-none bg-white/40 px-6 font-bold text-[#0A1F1C] hover:bg-white/60 transition-all">
+                            Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onDelete();
+                            }}
+                            disabled={isLoading}
+                            className="h-12 rounded-2xl bg-red-600 px-6 font-bold text-white hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all"
+                        >
+                            {isLoading ? "A eliminar..." : "Sim, eliminar embarcação"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 }

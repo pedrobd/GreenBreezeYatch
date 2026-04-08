@@ -62,7 +62,7 @@ const sidebarNavItems: NavItem[] = [
     {
         title: "Cupons",
         href: "/coupons",
-        icon: Activity, // Using Activity as a placeholder or Tag if available
+        icon: Tag,
         roles: ["admin", "booking_manager"],
     },
     {

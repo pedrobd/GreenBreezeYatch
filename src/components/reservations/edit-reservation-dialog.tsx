@@ -62,7 +62,6 @@ import {
     updateReservationAction,
     deleteReservationAction,
     getReservationDatesAction,
-    getExtraActivitiesAction,
     getFoodMenuAction
 } from "@/app/actions/reservations";
 import { getBoatProgramsAction, getBoatExtrasAction } from "@/app/actions/fleet";
@@ -95,8 +94,9 @@ interface ReservationWithRelations {
     passengers_children?: number;
     client_address?: string;
     client_country?: string;
+    payment_method?: string;
+    payment_status?: string;
     /** Joined via Supabase select */
-    reservation_activities?: Array<{ id: string; quantity: number; [key: string]: unknown }>;
     reservation_food?: Array<{ id: string; quantity: number; [key: string]: unknown }>;
 }
 
@@ -138,7 +138,7 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
             skipper_id: reservation?.skipper_id || "",
             marinheiro_id: reservation?.marinheiro_id || "",
             extra_hours: reservation?.extra_hours || 0,
-            selected_activities: reservation?.reservation_activities || [],
+            selected_extras: (reservation as any)?.reservation_activities || [],
             selected_food: reservation?.reservation_food || [],
             boarding_location: reservation?.boarding_location || "Mitrena",
             passengers_adults: reservation?.passengers_adults || 1,
@@ -178,7 +178,7 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
                 skipper_id: reservation.skipper_id || "",
                 marinheiro_id: reservation.marinheiro_id || "",
                 extra_hours: reservation.extra_hours || 0,
-                selected_activities: reservation.reservation_activities || [],
+                selected_extras: (reservation as any).reservation_activities || [],
                 selected_food: reservation.reservation_food || [],
                 boarding_location: reservation.boarding_location || "Mitrena",
                 passengers_adults: reservation.passengers_adults || 1,
@@ -191,7 +191,7 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
 
     // Watch form values for calculations
     const selectedBoatId = form.watch("boat_id");
-    const selectedActivities = form.watch("selected_activities") || [];
+    const selectedExtras = form.watch("selected_extras") || [];
     const selectedFood = form.watch("selected_food") || [];
     const selectedBoardingLocation = form.watch("boarding_location");
     const passengersAdults = form.watch("passengers_adults");
@@ -208,7 +208,7 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
         selectedBoatId: selectedBoatId || "",
         selectedDate: selectedDate || "",
         selectedProgramId: selectedProgramId || "",
-        selectedActivities,
+        selectedExtras,
         selectedFood,
         selectedBoardingLocation,
         totalPassengers,
