@@ -31,6 +31,10 @@ export function MultiImageUpload({
 
     useEffect(() => {
         setIsMounted(true);
+        // Diagnostic log
+        if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
+            console.warn("Cloudinary Cloud Name missing (Multi)");
+        }
     }, []);
 
     const onUpload = (result: any) => {
@@ -46,7 +50,7 @@ export function MultiImageUpload({
         return null;
     }
 
-    // Safety check for Cloudinary Cloud Name
+    // Safety check for Cloudinary Cloud Name (v2 - forced refresh)
     if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
         return (
             <div className="space-y-4">

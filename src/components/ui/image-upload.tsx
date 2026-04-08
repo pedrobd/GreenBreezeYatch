@@ -25,6 +25,10 @@ export function ImageUpload({
 
     useEffect(() => {
         setIsMounted(true);
+        // Diagnostic log to verify env vars on client side
+        if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
+            console.warn("Cloudinary Cloud Name is missing from environment variables.");
+        }
     }, []);
 
     const onUpload = (result: any) => {
@@ -35,7 +39,7 @@ export function ImageUpload({
         return null;
     }
 
-    // Safety check for Cloudinary Cloud Name
+    // Safety check for Cloudinary Cloud Name (v2 - forced refresh)
     if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
         return (
             <div className="space-y-4">
