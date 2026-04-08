@@ -177,6 +177,7 @@ export function ReservationDetailsSection({
                                     <SelectItem value="Mitrena">Mitrena</SelectItem>
                                     <SelectItem value="Setúbal">Setúbal {!selectedBoat?.is_partner && "(Taxa extra)"}</SelectItem>
                                     <SelectItem value="Tróia">Tróia</SelectItem>
+                                    <SelectItem value="Marina de Tróia">Marina de Tróia</SelectItem>
                                 </SelectContent>
                             </Select>
                             <FormMessage className="text-[10px]" />
