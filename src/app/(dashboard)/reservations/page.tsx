@@ -59,13 +59,21 @@ export default async function ReservationsPage({
     let query = supabaseAdmin
         .from('reservations')
         .select(`
-            *, 
-            fleet!inner(name),
-            boat_programs!program_id(name, duration_hours),
+            *,
+            fleet(name),
+            boat_programs(name, duration_hours),
             skipper:team_members!skipper_id(name, role, rate_sunset, rate_half_day, rate_6hour, rate_full_day, rate_extra_hour),
             marinheiro:team_members!marinheiro_id(name, role, rate_sunset, rate_half_day, rate_6hour, rate_full_day, rate_extra_hour),
-            reservation_activities(id:activity_id, quantity),
-            reservation_food(id:food_id, quantity)
+            reservation_activities(
+                activity_id,
+                quantity,
+                extra_activities(name)
+            ),
+            reservation_food(
+                food_id,
+                quantity,
+                food_menu(name)
+            )
         `, { count: 'exact' });
 
     // 1. Tab Filtering (Atuais vs Histórico)
@@ -120,6 +128,10 @@ export default async function ReservationsPage({
     }
 
     const totalPages = count ? Math.ceil(count / limit) : 0;
+
+    function cn(...inputs: any[]) {
+        return inputs.filter(Boolean).join(" ");
+    }
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -283,8 +295,4 @@ export default async function ReservationsPage({
             </Tabs>
         </div>
     );
-}
-
-function cn(...inputs: any[]) {
-    return inputs.filter(Boolean).join(" ");
 }

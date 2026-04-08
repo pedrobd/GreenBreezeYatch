@@ -115,8 +115,14 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [team, setTeam] = useState<TeamMember[]>([]);
     const [rates, setRates] = useState<StaffRate[]>([]);
-    const [availableFoodState, setAvailableFoodState] = useState<FoodItem[]>([]);
-    const [bookedDates, setBookedDates] = useState<string[]>([]);
+    
+    console.log('--- RESERVATION EXTRAS DEBUG ---');
+    console.log('reservation_activities:', JSON.stringify(reservation?.reservation_activities, null, 2));
+    console.log('reservation_food:', JSON.stringify(reservation?.reservation_food, null, 2));
+    console.log('-------------------------------');
+
+    const [availableFoodState, setAvailableFoodState] = useState<FoodItem[]>(availableFood || []);
+    const [bookedDates, setBookedDates] = useState<string[]>(initialBookedDates || []);
 
     const form = useForm<ReservationFormValues>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -139,8 +145,14 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
             skipper_id: reservation?.skipper_id || "",
             marinheiro_id: reservation?.marinheiro_id || "",
             extra_hours: reservation?.extra_hours || 0,
-            selected_extras: (reservation?.reservation_activities || []).map(a => ({ id: a.id, quantity: a.quantity || 1 })),
-            selected_food: (reservation?.reservation_food || []).map(f => ({ id: f.id, quantity: f.quantity || 1 })),
+            selected_extras: (reservation?.reservation_activities || []).map((a: any) => ({ 
+                id: a.activity_id || a.id, 
+                quantity: a.quantity || 1 
+            })),
+            selected_food: (reservation?.reservation_food || []).map((f: any) => ({ 
+                id: f.food_id || f.id, 
+                quantity: f.quantity || 1 
+            })),
             boarding_location: reservation?.boarding_location || "Mitrena",
             passengers_adults: reservation?.passengers_adults || 1,
             passengers_children: reservation?.passengers_children || 0,
@@ -179,8 +191,14 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
                 skipper_id: reservation.skipper_id || "",
                 marinheiro_id: reservation.marinheiro_id || "",
                 extra_hours: reservation.extra_hours || 0,
-                selected_extras: (reservation.reservation_activities || []).map(a => ({ id: a.id, quantity: a.quantity || 1 })),
-                selected_food: (reservation.reservation_food || []).map(f => ({ id: f.id, quantity: f.quantity || 1 })),
+                selected_extras: (reservation.reservation_activities || []).map((a: any) => ({ 
+                    id: a.activity_id || a.id, 
+                    quantity: a.quantity || 1 
+                })),
+                selected_food: (reservation.reservation_food || []).map((f: any) => ({ 
+                    id: f.food_id || f.id, 
+                    quantity: f.quantity || 1 
+                })),
                 boarding_location: reservation.boarding_location || "Mitrena",
                 passengers_adults: reservation.passengers_adults || 1,
                 passengers_children: reservation.passengers_children || 0,

@@ -150,8 +150,18 @@ export async function createBoatExtraAction(values: z.infer<typeof boatExtraSche
     if (!user) return { error: "Não autorizado." };
 
     const adminClient = createAdminClient();
-    const { error } = await adminClient.from("boat_extras").insert([validatedFields.data]);
-    if (error) return { error: error.message || "Erro ao criar extra." };
+    const { data: mainData, error: mainError } = await adminClient.from("boat_extras").insert([validatedFields.data]).select("id").single();
+    
+    if (mainData) {
+        await adminClient.from("extra_activities").upsert({
+            id: mainData.id,
+            name: validatedFields.data.name,
+            price: validatedFields.data.price,
+            type: "Boat Extra"
+        });
+    }
+
+    if (mainError) return { error: mainError.message || "Erro ao criar extra." };
 
     revalidatePath("/fleet");
     return { success: true };
@@ -166,8 +176,16 @@ export async function updateBoatExtraAction(id: string, values: z.infer<typeof b
     if (!user) return { error: "Não autorizado." };
 
     const adminClient = createAdminClient();
-    const { error } = await adminClient.from("boat_extras").update(validatedFields.data).eq("id", id);
-    if (error) return { error: error.message || "Erro ao atualizar extra." };
+    const { error: mainError } = await adminClient.from("boat_extras").update(validatedFields.data).eq("id", id);
+    
+    await adminClient.from("extra_activities").upsert({
+        id,
+        name: validatedFields.data.name,
+        price: validatedFields.data.price,
+        type: "Boat Extra"
+    });
+
+    if (mainError) return { error: mainError.message || "Erro ao atualizar extra." };
 
     revalidatePath("/fleet");
     return { success: true };
@@ -179,8 +197,10 @@ export async function deleteBoatExtraAction(id: string) {
     if (!user) return { error: "Não autorizado." };
 
     const adminClient = createAdminClient();
-    const { error } = await adminClient.from("boat_extras").delete().eq("id", id);
-    if (error) return { error: "Erro ao eliminar extra." };
+    const { error: mainError } = await adminClient.from("boat_extras").delete().eq("id", id);
+    await adminClient.from("extra_activities").delete().eq("id", id);
+
+    if (mainError) return { error: "Erro ao eliminar extra." };
 
     revalidatePath("/fleet");
     return { success: true };

@@ -26,9 +26,19 @@ export async function createExtraAction(values: ExtraFormValues) {
 
     const adminClient = createAdminClient();
     const { id, ...insertData } = validatedFields.data;
-    const { error } = await adminClient.from("extras").insert([insertData]);
+    
+    // Dual write to both tables
+    const { data: mainData, error: mainError } = await adminClient.from("extras").insert([insertData]).select("id").single();
+    if (mainData) {
+        await adminClient.from("extra_activities").upsert({
+            id: mainData.id,
+            name: insertData.name,
+            price: insertData.price,
+            type: "Global Extra"
+        });
+    }
 
-    if (error) return { error: error.message || "Erro ao criar extra." };
+    if (mainError) return { error: mainError.message || "Erro ao criar extra." };
 
     revalidatePath("/extras");
     return { success: true };
@@ -44,9 +54,17 @@ export async function updateExtraAction(id: string, values: ExtraFormValues) {
 
     const adminClient = createAdminClient();
     const { id: _id, ...updateData } = validatedFields.data;
-    const { error } = await adminClient.from("extras").update(updateData).eq("id", id);
+    
+    // Dual update
+    const { error: mainError } = await adminClient.from("extras").update(updateData).eq("id", id);
+    await adminClient.from("extra_activities").upsert({
+        id,
+        name: updateData.name,
+        price: updateData.price,
+        type: "Global Extra"
+    });
 
-    if (error) return { error: error.message || "Erro ao atualizar extra." };
+    if (mainError) return { error: mainError.message || "Erro ao atualizar extra." };
 
     revalidatePath("/extras");
     return { success: true };
@@ -58,9 +76,10 @@ export async function deleteExtraAction(id: string) {
     if (!user) return { error: "Não autorizado." };
 
     const adminClient = createAdminClient();
-    const { error } = await adminClient.from("extras").delete().eq("id", id);
+    const { error: mainError } = await adminClient.from("extras").delete().eq("id", id);
+    await adminClient.from("extra_activities").delete().eq("id", id);
 
-    if (error) return { error: "Erro ao eliminar extra." };
+    if (mainError) return { error: "Erro ao eliminar extra." };
 
     revalidatePath("/extras");
     return { success: true };
