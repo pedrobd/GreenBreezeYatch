@@ -78,7 +78,7 @@ export function MultiImageUpload({
 
             <CldUploadWidget
                 onSuccess={onUpload}
-                uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "greenbreeze_uploads"}
+                uploadPreset={uploadPreset}
                 options={{
                     maxFiles: 10,
                     multiple: true,
