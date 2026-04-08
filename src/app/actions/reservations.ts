@@ -327,17 +327,13 @@ export async function cancelReservationAction(id: string) {
             // Optional: Get boat name separately to avoid join issues
             const { data: boat } = await adminClient.from("fleet").select("name").eq("id", res.boat_id).single();
             
-            console.log("Triggering cancellation email for:", res.client_email);
-            
-            const emailResult = await sendCancellationEmail({
+            await sendCancellationEmail({
                 id: res.id,
                 client_name: res.client_name,
                 client_email: res.client_email,
                 date: res.date,
                 boat_name: boat?.name || "Barco GreenBreeze"
             });
-            
-            console.log("Email result:", emailResult);
         } catch (emailError) {
             console.error("Error sending cancellation email:", emailError);
         }

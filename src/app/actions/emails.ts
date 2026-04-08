@@ -7,6 +7,11 @@ import { ptBR } from "date-fns/locale";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// AFTER VERIFYING DOMAIN ON VERCEL/RESEND, CHANGE THESE TO YOUR OFFICIAL EMAILS
+const FROM_EMAIL_MAIN = "onboarding@resend.dev"; // Should be e.g. "GreenBreeze <reservas@greenbreeze.pt>"
+const FROM_EMAIL_ADMIN = "onboarding@resend.dev"; // Should be e.g. "GreenBreeze Admin <sistema@greenbreeze.pt>"
+const FROM_EMAIL_FLEET = "onboarding@resend.dev"; // Should be e.g. "GreenBreeze Fleet <frota@greenbreeze.pt>"
+
 interface ReservationEmailData {
     id: string;
     client_name: string;
@@ -53,7 +58,7 @@ export async function sendReservationEmails(data: ReservationEmailData) {
 
         // 2. Email for Client (Bilingual PT/EN Placeholder)
         await resend.emails.send({
-            from: "GreenBreeze <onboarding@resend.dev>",
+            from: FROM_EMAIL_MAIN,
             to: [data.client_email],
             subject: "Confirmação de Reserva / Booking Confirmation - GreenBreeze",
             html: `
@@ -77,7 +82,7 @@ export async function sendReservationEmails(data: ReservationEmailData) {
         // 3. Email for Crew (Skipper & Marinheiro - Focus on operation)
         if (crewEmails.length > 0) {
             await resend.emails.send({
-                from: "GreenBreeze Fleet <onboarding@resend.dev>",
+                from: FROM_EMAIL_FLEET,
                 to: crewEmails,
                 subject: `Escala de Serviço: ${formattedDate} - ${data.boat_name}`,
                 html: `
@@ -99,7 +104,7 @@ export async function sendReservationEmails(data: ReservationEmailData) {
         const internalRecipients = [...new Set([...adminEmails, ...managerEmails])];
         if (internalRecipients.length > 0) {
             await resend.emails.send({
-                from: "GreenBreeze Admin <onboarding@resend.dev>",
+                from: FROM_EMAIL_ADMIN,
                 to: internalRecipients,
                 subject: `Nova Reserva Registada: ${data.client_name} - ${data.boat_name}`,
                 html: `
@@ -171,14 +176,12 @@ export async function sendCancellationEmail(data: {
         try {
             formattedDate = format(new Date(data.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
         } catch (e) {
-            console.error("Date formatting error in email:", e);
+            // Silently handle date formatting error
         }
 
-        console.log(`Attempting to send cancellation email to ${data.client_email} from onboarding@resend.dev`);
-
         // 1. Email for Client
-        const clientEmailResponse = await resend.emails.send({
-            from: "GreenBreeze <onboarding@resend.dev>",
+        await resend.emails.send({
+            from: FROM_EMAIL_MAIN,
             to: [data.client_email],
             subject: "Reserva Cancelada / Booking Cancelled - GreenBreeze",
             html: `
@@ -198,14 +201,12 @@ export async function sendCancellationEmail(data: {
             `,
         });
 
-        console.log("Resend client response:", clientEmailResponse);
-
         // 2. Internal Notification
         const { data: profiles } = await createAdminClient().from("profiles").select("email").eq("role", "admin");
         const adminEmails = profiles?.map(p => p.email) || ["info@greenbreeze.pt"];
 
         const adminEmailResponse = await resend.emails.send({
-            from: "GreenBreeze Admin <onboarding@resend.dev>",
+            from: FROM_EMAIL_ADMIN,
             to: adminEmails,
             subject: `Reserva CANCELADA: ${data.client_name} - ${data.boat_name}`,
             html: `
@@ -222,8 +223,6 @@ export async function sendCancellationEmail(data: {
                 </div>
             `,
         });
-
-        console.log("Resend admin response:", adminEmailResponse);
 
         return { success: true };
     } catch (error) {
