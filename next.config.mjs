@@ -54,6 +54,10 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: true,
     },
+    env: {
+        NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "dzkvvnnge",
+        NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: "greenbreeze_uploads",
+    },
 };
 
 export default nextConfig;

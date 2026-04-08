@@ -63,6 +63,7 @@ export function ImageUpload({
                 <CldUploadWidget
                     onSuccess={onUpload}
                     uploadPreset={uploadPreset}
+                    signatureEndpoint={undefined}
                     options={{
                         maxFiles: 1,
                         styles: {
@@ -102,7 +103,7 @@ export function ImageUpload({
                                 className="w-full rounded-2xl border-dashed border-2 border-[#44C3B2]/50 hover:border-[#44C3B2] bg-white/50 hover:bg-[#44C3B2]/10 text-[#0A1F1C] transition-all h-32 flex flex-col items-center justify-center gap-3"
                             >
                                 <ImagePlus className="h-8 w-8 text-[#44C3B2]" />
-                                <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Upload de Imagem</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Upload de Imagem v1.0.3</span>
                             </Button>
                         );
                     }}
