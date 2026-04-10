@@ -11,6 +11,9 @@ export const extraSchema = z.object({
     image_url: z.string().optional().or(z.literal("")),
     show_in_frontoffice: z.boolean().default(true),
     is_active: z.boolean().default(true),
+    category: z.enum(["aluguer", "aula"]).default("aluguer"),
+    quantity: z.coerce.number().min(0, "A quantidade deve ser pelo menos 0").default(1),
+    sort_order: z.coerce.number().default(0),
 });
 
 export type ExtraFormValues = z.infer<typeof extraSchema>;

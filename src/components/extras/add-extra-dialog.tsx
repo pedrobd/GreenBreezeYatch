@@ -53,6 +53,9 @@ export function AddExtraDialog() {
             image_url: "",
             show_in_frontoffice: true,
             is_active: true,
+            category: "aluguer",
+            quantity: 1,
+            sort_order: 0,
         },
     });
 
@@ -196,6 +199,60 @@ export function AddExtraDialog() {
                                             onRemove={() => field.onChange("")}
                                             disabled={loading}
                                         />
+                                    </FormControl>
+                                    <FormMessage className="text-[10px]" />
+                                </FormItem>
+                            )}
+                        />
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="category"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/50">Categoria</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="rounded-xl border-white/50 bg-white/50 focus:ring-[#44C3B2]">
+                                                    <SelectValue placeholder="Selecione" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className="rounded-xl border-white/50 bg-white/90 backdrop-blur-xl">
+                                                <SelectItem value="aluguer">Aluguer</SelectItem>
+                                                <SelectItem value="aula">Aula</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage className="text-[10px]" />
+                                    </FormItem>
+                                )}
+                            />
+                            
+                            {form.watch("category") === "aluguer" && (
+                                <FormField
+                                    control={form.control}
+                                    name="quantity"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/50">Quantidade Disponível</FormLabel>
+                                            <FormControl>
+                                                <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]" />
+                                            </FormControl>
+                                            <FormMessage className="text-[10px]" />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+                        </div>
+
+                        <FormField
+                            control={form.control}
+                            name="sort_order"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/50">Posição na Página (Ordem)</FormLabel>
+                                    <FormControl>
+                                        <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]" />
                                     </FormControl>
                                     <FormMessage className="text-[10px]" />
                                 </FormItem>

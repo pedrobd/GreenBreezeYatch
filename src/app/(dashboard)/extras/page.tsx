@@ -24,7 +24,7 @@ export default async function ExtrasPage() {
     const { data: extras, error: extrasError } = await supabase
         .from("extras")
         .select("*")
-        .order("name");
+        .order("sort_order", { ascending: true });
 
     if (extrasError) console.error("Error fetching extras:", extrasError);
 

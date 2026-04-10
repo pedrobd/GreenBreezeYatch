@@ -59,6 +59,9 @@ interface Extra {
     image_url: string | null;
     show_in_frontoffice: boolean;
     is_active: boolean;
+    category: string;
+    quantity: number;
+    sort_order: number;
 }
 
 interface ExtrasTableProps {
@@ -86,6 +89,9 @@ export function ExtrasTable({ items }: ExtrasTableProps) {
             image_url: extra.image_url || "",
             show_in_frontoffice: extra.show_in_frontoffice,
             is_active: extra.is_active,
+            category: extra.category as "aluguer" | "aula",
+            quantity: extra.quantity,
+            sort_order: extra.sort_order || 0,
         });
         setEditingExtra(extra);
     }
@@ -145,6 +151,7 @@ export function ExtrasTable({ items }: ExtrasTableProps) {
                             <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/40">Duração</th>
                             <th className="py-4 px-4 text-center text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/40">Site</th>
                             <th className="py-4 px-4 text-center text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/40">Ativo</th>
+                            <th className="py-4 px-4 text-left text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/40">Categoria / Stock</th>
                             <th className="py-4 px-4 text-right text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/40">Ações</th>
                         </tr>
                     </thead>
@@ -195,6 +202,18 @@ export function ExtrasTable({ items }: ExtrasTableProps) {
                                     ) : (
                                         <ToggleLeft className="h-5 w-5 text-[#0A1F1C]/20 mx-auto" />
                                     )}
+                                </td>
+                                <td className="py-3 px-4">
+                                    <div className="flex flex-col gap-1">
+                                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md w-fit ${extra.category === 'aula' ? 'bg-[#44C3B2]/20 text-[#0A1F1C]' : 'bg-[#0A1F1C]/10 text-[#0A1F1C]/60'}`}>
+                                            {extra.category === 'aula' ? 'Aula' : 'Aluguer'}
+                                        </span>
+                                        {extra.category === 'aluguer' && (
+                                            <span className="text-[11px] font-medium text-[#0A1F1C]/40">
+                                                Stock: {extra.quantity}
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="py-3 px-4 text-right">
                                     <div className="flex items-center justify-end gap-1">
@@ -292,6 +311,40 @@ export function ExtrasTable({ items }: ExtrasTableProps) {
                                     <FormControl>
                                         <ImageUpload value={field.value || ""} onChange={(url) => field.onChange(url)} onRemove={() => field.onChange("")} disabled={loading} />
                                     </FormControl>
+                                    <FormMessage className="text-[10px]" />
+                                </FormItem>
+                            )} />
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField control={form.control} name="category" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/50">Categoria</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormControl><SelectTrigger className="rounded-xl border-white/50 bg-white/50"><SelectValue /></SelectTrigger></FormControl>
+                                            <SelectContent className="rounded-xl border-white/50 bg-white/90 backdrop-blur-xl">
+                                                <SelectItem value="aluguer">Aluguer</SelectItem>
+                                                <SelectItem value="aula">Aula</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage className="text-[10px]" />
+                                    </FormItem>
+                                )} />
+
+                                {form.watch("category") === "aluguer" && (
+                                    <FormField control={form.control} name="quantity" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/50">Quantidade</FormLabel>
+                                            <FormControl><Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]" /></FormControl>
+                                            <FormMessage className="text-[10px]" />
+                                        </FormItem>
+                                    )} />
+                                )}
+                            </div>
+
+                            <FormField control={form.control} name="sort_order" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/50">Posição na Página (Ordem)</FormLabel>
+                                    <FormControl><Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]" /></FormControl>
                                     <FormMessage className="text-[10px]" />
                                 </FormItem>
                             )} />
