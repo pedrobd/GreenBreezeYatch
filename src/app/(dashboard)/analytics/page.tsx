@@ -59,8 +59,9 @@ export default async function AnalyticsPage({
                 quantity,
                 food_menu (name)
             ),
-            skipper_id,
-            marinheiro_id
+            booking_sources (name),
+            skipper:team_members!skipper_id(name),
+            marinheiro:team_members!marinheiro_id(name)
         `)
         .gte('date', fromDateStr)
         .lte('date', toDateStr)

@@ -27,24 +27,35 @@ export function ExportButton({ data, filename = "greenbreeze-export" }: ExportBu
                 "Email",
                 "Telemóvel",
                 "Barco",
+                "Origem",
+                "Fatura",
+                "Equipa",
                 "Estado",
                 "Valor Total (€)",
                 "Notas"
             ];
 
             // Map data to rows
-            const rows = data.map(r => [
-                r.id,
-                r.date,
-                r.time,
-                `"${r.client_name}"`,
-                r.client_email || "-",
-                r.client_phone || "-",
-                `"${r.fleet?.name || 'N/A'}"`,
-                r.status,
-                r.total_amount.toFixed(2),
-                `"${(r.notes || '').replace(/\n/g, ' ')}"`
-            ]);
+            const rows = data.map(r => {
+                const equipe = [r.skipper?.name, r.marinheiro?.name].filter(Boolean).join(" / ") || "-";
+                const origem = r.booking_sources?.name || r.source_type || "Cliente Final";
+
+                return [
+                    r.id,
+                    r.date,
+                    r.time,
+                    `"${r.client_name}"`,
+                    r.client_email || "-",
+                    r.client_phone || "-",
+                    `"${r.fleet?.name || 'N/A'}"`,
+                    `"${origem}"`,
+                    `"${r.invoice_number || '-'}"`,
+                    `"${equipe}"`,
+                    r.status,
+                    r.total_amount.toFixed(2),
+                    `"${(r.notes || '').replace(/\n/g, ' ')}"`
+                ];
+            });
 
             // Combine into CSV string
             const csvContent = [

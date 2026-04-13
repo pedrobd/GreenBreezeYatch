@@ -208,11 +208,9 @@ export function ExtrasTable({ items }: ExtrasTableProps) {
                                         <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md w-fit ${extra.category === 'aula' ? 'bg-[#44C3B2]/20 text-[#0A1F1C]' : 'bg-[#0A1F1C]/10 text-[#0A1F1C]/60'}`}>
                                             {extra.category === 'aula' ? 'Aula' : 'Aluguer'}
                                         </span>
-                                        {extra.category === 'aluguer' && (
-                                            <span className="text-[11px] font-medium text-[#0A1F1C]/40">
-                                                Stock: {extra.quantity}
-                                            </span>
-                                        )}
+                                        <span className="text-[11px] font-medium text-[#0A1F1C]/40">
+                                            Stock: {extra.quantity}
+                                        </span>
                                     </div>
                                 </td>
                                 <td className="py-3 px-4 text-right">
@@ -330,15 +328,13 @@ export function ExtrasTable({ items }: ExtrasTableProps) {
                                     </FormItem>
                                 )} />
 
-                                {form.watch("category") === "aluguer" && (
-                                    <FormField control={form.control} name="quantity" render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/50">Quantidade</FormLabel>
-                                            <FormControl><Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]" /></FormControl>
-                                            <FormMessage className="text-[10px]" />
-                                        </FormItem>
-                                    )} />
-                                )}
+                                <FormField control={form.control} name="quantity" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/50">Quantidade / Stock</FormLabel>
+                                        <FormControl><Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]" /></FormControl>
+                                        <FormMessage className="text-[10px]" />
+                                    </FormItem>
+                                )} />
                             </div>
 
                             <FormField control={form.control} name="sort_order" render={({ field }) => (

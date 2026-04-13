@@ -109,6 +109,22 @@ export function ClientInfoSection() {
             </FormItem>
           )}
         />
+        <FormField
+          control={control}
+          name="invoice_number"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="font-bold text-[#0A1F1C]/70">Número da Fatura</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <FileText className="absolute left-3 top-2.5 h-4 w-4 text-[#0A1F1C]/40" />
+                  <Input placeholder="Ex: FT 2024/001" className="pl-9" {...field} />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
     </div>
   );

@@ -68,20 +68,6 @@ export function ReservationDetailsSection({
                 {/* Row 1: Valor e Embarcação */}
                 <FormField
                     control={control}
-                    name="total_amount"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Valor Total (€)</FormLabel>
-                            <FormControl>
-                                <Input type="number" step="0.01" {...field} onChange={e => field.onChange(Number(e.target.value))} className="focus-visible:ring-[#44C3B2]" />
-                            </FormControl>
-                            <FormMessage className="text-[10px]" />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    control={control}
                     name="boat_id"
                     render={({ field }) => (
                         <FormItem>
@@ -285,12 +271,54 @@ export function ReservationDetailsSection({
                                 type="button"
                                 variant="ghost"
                                 className="h-auto py-2.5 px-3 text-[10px] justify-center border border-white/60 bg-white/60 hover:bg-[#0A1F1C] hover:text-[#44C3B2] transition-all rounded-xl font-bold shadow-sm"
-                                onClick={() => setValue("time", opt.value)}
+                                onClick={() => setValue("time", opt.value, { shouldDirty: true })}
                             >
                                 {opt.label}
                             </Button>
                         ))}
                     </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                        control={control}
+                        name="subtotal_amount"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Preço Base / Barco (€)</FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        type="number" 
+                                        step="0.01" 
+                                        {...field} 
+                                        onChange={e => field.onChange(Number(e.target.value))} 
+                                        className="focus-visible:ring-[#44C3B2] bg-white/50" 
+                                    />
+                                </FormControl>
+                                <FormMessage className="text-[10px]" />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={control}
+                        name="total_amount"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#44C3B2] font-bold">Valor Total (€)</FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        type="number" 
+                                        step="0.01" 
+                                        {...field} 
+                                        onChange={e => field.onChange(Number(e.target.value))} 
+                                        className="focus-visible:ring-[#44C3B2] font-bold text-[#0A1F1C] bg-[#44C3B2]/10 border-[#44C3B2]/30" 
+                                    />
+                                </FormControl>
+                                <FormMessage className="text-[10px]" />
+                            </FormItem>
+                        )}
+                    />
                 </div>
             </div>
             {capacityExceeded && (

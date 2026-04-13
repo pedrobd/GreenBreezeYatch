@@ -36,12 +36,14 @@ export interface BoatExtra {
   price: number;
   pricing_type: 'per_person' | 'per_booking';
   vat_rate?: number;
+  max_quantity?: number;
 }
 
 export interface FoodItem {
   id: string;
   name: string;
   price: number;
+  max_quantity?: number;
 }
 
 export interface TeamMember {

@@ -1,0 +1,8 @@
+Starting Diagnostic...
+
+Reservations columns found: id, client_name, client_email, client_phone, boat_id, date, time, status, total_amount, payment_status, payment_method, notes, created_at, skipper_id, marinheiro_id, extra_hours, extra_activities, meals, boarding_location, passengers_adults, passengers_children, client_address, client_country, program_id, season_applied, subtotal_amount, extras_amount, vat_base_amount, vat_extras_amount, updated_at, coupon_code, discount_amount, language
+team_members table is OK.
+Staff Rates columns found: id, staff_role, program_code, base_value, extra_hour_value
+
+Testing join...
+Join worked!

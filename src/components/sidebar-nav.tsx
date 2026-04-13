@@ -17,6 +17,7 @@ import {
     UsersRound,
     Sparkles,
     Tag,
+    Globe,
 } from "lucide-react";
 import { signOutAction } from "@/app/actions/auth";
 import { useRouter } from "next/navigation";
@@ -63,6 +64,12 @@ const sidebarNavItems: NavItem[] = [
         title: "Cupons",
         href: "/coupons",
         icon: Tag,
+        roles: ["admin", "booking_manager"],
+    },
+    {
+        title: "Origens de Reserva",
+        href: "/booking-sources",
+        icon: Globe,
         roles: ["admin", "booking_manager"],
     },
     {

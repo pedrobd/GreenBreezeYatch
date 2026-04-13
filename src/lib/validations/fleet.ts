@@ -14,6 +14,7 @@ export const boatSchema = z.object({
     description: z.string().optional(),
     inclusions: z.string().optional(),
     order_index: z.number().optional(),
+    invoice_number: z.string().optional(),
 });
 
 export type BoatFormValues = z.infer<typeof boatSchema>;
@@ -39,6 +40,7 @@ export const boatExtraSchema = z.object({
     pricing_type: z.enum(["per_booking", "per_person"]).default("per_booking"),
     description: z.string().optional(),
     image_url: z.string().optional(),
+    max_quantity: z.coerce.number().min(0).optional().default(0),
     show_in_frontoffice: z.boolean().default(true),
     is_active: z.boolean().default(true),
 });

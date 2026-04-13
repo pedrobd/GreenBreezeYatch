@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -64,6 +66,7 @@ import {
     getReservationDatesAction,
     getFoodMenuAction
 } from "@/app/actions/reservations";
+import { getBookingSourcesAction } from "@/app/actions/booking-sources";
 import { getBoatProgramsAction, getBoatExtrasAction } from "@/app/actions/fleet";
 import { getExtrasAction } from "@/app/actions/extras";
 import { getTeamMembers } from "@/app/actions/team";
@@ -96,6 +99,9 @@ interface ReservationWithRelations {
     client_country?: string;
     payment_method?: string;
     payment_status?: string;
+    source_type?: string;
+    source_id?: string;
+    invoice_number?: string;
     /** Joined via Supabase select */
     reservation_food?: Array<{ id: string; quantity: number | null; food_id?: string; [key: string]: unknown }>;
     reservation_activities?: Array<{ id: string; quantity: number | null; activity_id?: string; [key: string]: unknown }>;
@@ -112,6 +118,8 @@ interface EditReservationDialogProps {
 
 export function EditReservationDialog({ reservation, fleet, open, onOpenChange, availableFood, bookedDates: initialBookedDates }: EditReservationDialogProps) {
     const [loading, setLoading] = useState(false);
+    const [allSources, setAllSources] = useState<any[]>([]);
+    const router = useRouter();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [team, setTeam] = useState<TeamMember[]>([]);
     const [rates, setRates] = useState<StaffRate[]>([]);
@@ -158,6 +166,9 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
             passengers_children: reservation?.passengers_children || 0,
             client_address: reservation?.client_address || "",
             client_country: reservation?.client_country || "Portugal",
+            source_type: (reservation?.source_type as any) || "Cliente Final",
+            source_id: reservation?.source_id || "",
+            invoice_number: reservation?.invoice_number || "",
         },
     });
 
@@ -167,6 +178,7 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
             getTeamMembers().then(result => setTeam('team' in result ? result.team as TeamMember[] : []));
             getStaffRates().then(result => setRates('rates' in result ? result.rates as StaffRate[] : []));
             getFoodMenuAction().then(result => setAvailableFoodState((result.data as FoodItem[]) || []));
+            getBookingSourcesAction().then(res => setAllSources(res.data || []));
         }
     }, [open]);
 
@@ -204,6 +216,9 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
                 passengers_children: reservation.passengers_children || 0,
                 client_address: reservation.client_address || "",
                 client_country: reservation.client_country || "Portugal",
+                source_type: (reservation.source_type as any) || "Cliente Final",
+                source_id: reservation.source_id || "",
+                invoice_number: reservation.invoice_number || "",
             });
         }
     }, [reservation, form]);
@@ -316,6 +331,48 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
                                     <FormControl><Textarea {...field} className="min-h-[40px]" /></FormControl>
                                 </FormItem>
                             )} />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField control={form.control} name="source_type" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70 font-bold">Origem da Reserva</FormLabel>
+                                    <Select onValueChange={(val) => {
+                                        field.onChange(val);
+                                        form.setValue("source_id", "");
+                                    }} value={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue placeholder="Selecione a origem" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="Cliente Final">Cliente Final</SelectItem>
+                                            <SelectItem value="Agencia">Agência</SelectItem>
+                                            <SelectItem value="Redes Sociais">Redes Sociais</SelectItem>
+                                            <SelectItem value="Plataformas">Plataformas</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                            )} />
+
+                            {form.watch("source_type") !== "Cliente Final" && (
+                                <FormField control={form.control} name="source_id" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70 font-bold">
+                                            {form.watch("source_type") === "Agencia" ? "Qual Agência?" : 
+                                             form.watch("source_type") === "Redes Sociais" ? "Qual Rede Social?" : "Qual Plataforma?"}
+                                        </FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione a entidade" /></SelectTrigger></FormControl>
+                                            <SelectContent>
+                                                {allSources
+                                                    .filter(s => s.type === form.watch("source_type") && (s.is_active || s.id === reservation?.source_id))
+                                                    .map(s => (
+                                                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                                                    ))
+                                                }
+                                            </SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                )} />
+                            )}
                         </div>
 
                         <div className="flex justify-between items-center pt-4">

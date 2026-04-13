@@ -116,6 +116,10 @@ export function useReservationPricing({
             baseGross = (program[priceKey] as number) || 0;
             const vatRate = program.vat_rate || 23;
             vatBase = baseGross - (baseGross / (1 + (vatRate / 100)));
+        } else if (selectedBoat) {
+            // Fallback to boat base price if no program is selected
+            baseGross = selectedBoat.base_price || 0;
+            vatBase = baseGross - (baseGross / 1.23);
         }
 
         const locationSurcharge = (!isPartner && selectedBoardingLocation === "Setúbal") ? (selectedBoat?.setubal_surcharge || 50) : 0;
@@ -128,8 +132,9 @@ export function useReservationPricing({
         selectedExtras.forEach((curr) => {
             const extra = boatExtras.find(e => e.id === curr.id);
             if (extra) {
-                const isPerPerson = extra.pricing_type === 'per_person';
-                const qty = isPerPerson ? totalPassengers : curr.quantity;
+                // In backoffice, we should respect the manual quantity chosen
+                // unless it's a website booking (handled differently)
+                const qty = curr.quantity;
                 const gross = (extra.price || 0) * qty;
                 extrasGross += gross;
                 const vatRate = extra.vat_rate || 23;
@@ -151,8 +156,23 @@ export function useReservationPricing({
         const newVatExtras = Number(vatExtras.toFixed(2));
         const newTotal = baseGross + extrasGross;
 
+        // Log context to help debug
+        // console.log("Recalculating price...", { isEdit, subtotal: newSubtotal, extras: newExtras, total: newTotal });
+
         // In edit mode, ONLY update if the user has manually changed a price-impacting field.
         const { dirtyFields } = form.formState;
+        
+        // Sometimes React Hook Form doesn't mark array changes as dirty correctly without useFieldArray.
+        // We track changes to extras/food strings to be sure.
+        const extrasStr = JSON.stringify(selectedExtras);
+        const foodStr = JSON.stringify(selectedFood);
+        const forceUpdate = isFirstCalculation.current || 
+                           (extrasStr !== (form as any)._prevExtrasStr) || 
+                           (foodStr !== (form as any)._prevFoodStr);
+        
+        (form as any)._prevExtrasStr = extrasStr;
+        (form as any)._prevFoodStr = foodStr;
+
         const isDirty = (
             dirtyFields.boat_id ||
             dirtyFields.program_id ||
@@ -165,10 +185,34 @@ export function useReservationPricing({
             dirtyFields.extra_hours
         );
 
-        if (isEdit) {
-            if (!isDirty && !isFirstCalculation.current) return;
+        // MORE ROBUST PROTECTION: Use getFieldState to avoid proxy issues
+        const fieldState = form.getFieldState("subtotal_amount");
+        const isManualSubtotal = fieldState.isDirty;
+        const currentSubtotalValue = Number(form.getValues("subtotal_amount")) || 0;
+        
+        const isCriticalChange = dirtyFields.boat_id || dirtyFields.program_id;
+        
+        // If the user typed something (> 0) and we are about to overwrite it with 0
+        // (because no program is selected), we treat it as a manual override too.
+        const isLikelyManual = isManualSubtotal || (currentSubtotalValue > 0 && newSubtotal === 0);
+
+        if (isLikelyManual && !isCriticalChange) {
+            const manualTotal = currentSubtotalValue + newExtras;
+            
+            form.setValue("extras_amount", newExtras);
+            form.setValue("total_amount", manualTotal);
+            
+            // Still update vat fields for consistency
+            form.setValue("vat_base_amount", newVatBase);
+            form.setValue("vat_extras_amount", newVatExtras);
+            return;
         }
 
+        if (isEdit) {
+            if (!isDirty && !forceUpdate) return;
+        }
+
+        // Standard calculation
         form.setValue("subtotal_amount", newSubtotal);
         form.setValue("extras_amount", newExtras);
         form.setValue("vat_base_amount", newVatBase);
@@ -192,7 +236,9 @@ export function useReservationPricing({
         selectedBoat,
         enabled,
         isEdit,
-        form.formState.dirtyFields
+        form.formState.dirtyFields, // Explicitly watch dirtyFields
+        form.watch("extra_hours"),
+        form.watch("subtotal_amount")
     ]);
 
     return { boatPrograms, boatExtras, season };

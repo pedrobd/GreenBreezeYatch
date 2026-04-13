@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const reservationSchema = z.object({
     client_name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
-    client_email: z.string().email("E-mail inválido").optional().or(z.literal("")),
+    client_email: z.string().email("E-mail inválido").min(1, "E-mail obrigatório"),
     client_phone: z.string().min(9, "Telefone inválido").optional().or(z.literal("")),
     client_nif: z.string().optional().or(z.literal("")),
     boat_id: z.string().min(1, "Selecione um barco"),
@@ -17,6 +17,7 @@ export const reservationSchema = z.object({
     status: z.enum(["Pendente", "Confirmado", "Cancelado"]),
     total_amount: z.coerce.number().min(0).default(0),
     notes: z.string().optional().or(z.literal("")),
+    invoice_number: z.string().optional().or(z.literal("")),
     skipper_id: z.string().optional().or(z.literal("")),
     marinheiro_id: z.string().optional().or(z.literal("")),
     extra_hours: z.coerce.number().min(0).optional().default(0),
@@ -35,6 +36,8 @@ export const reservationSchema = z.object({
     client_country: z.string().optional().or(z.literal("")).default("Portugal"),
     payment_method: z.string().optional().or(z.literal("")),
     payment_status: z.string().optional().or(z.literal("")),
+    source_type: z.enum(["Cliente Final", "Agencia", "Redes Sociais", "Plataformas"]).default("Cliente Final"),
+    source_id: z.string().optional().or(z.literal("")),
 });
 
 export type ReservationFormValues = z.infer<typeof reservationSchema>;

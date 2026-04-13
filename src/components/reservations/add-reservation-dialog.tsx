@@ -45,8 +45,9 @@ import { reservationSchema } from "@/lib/validations/reservations";
 import {
     createReservationAction,
     getReservationDatesAction,
-    getFoodMenuAction
+    getFoodMenuAction,
 } from "@/app/actions/reservations";
+import { getBookingSourcesAction } from "@/app/actions/booking-sources";
 import { getBoatProgramsAction, getBoatExtrasAction } from "@/app/actions/fleet";
 import { getExtrasAction } from "@/app/actions/extras";
 import { getTeamMembers } from "@/app/actions/team";
@@ -71,6 +72,7 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
     const [availableFood, setAvailableFood] = useState<FoodItem[]>([]);
     const [team, setTeam] = useState<TeamMember[]>([]);
     const [rates, setRates] = useState<StaffRate[]>([]);
+    const [allSources, setAllSources] = useState<any[]>([]);
 
 
     useEffect(() => {
@@ -79,6 +81,7 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
             getFoodMenuAction().then((result) => setAvailableFood((result.data as FoodItem[]) || []));
             getTeamMembers().then((result) => setTeam('team' in result ? result.team as TeamMember[] : []));
             getStaffRates().then((result) => setRates('rates' in result ? result.rates as StaffRate[] : []));
+            getBookingSourcesAction().then((result) => setAllSources(result.data || []));
         }
     }, [open]);
 
@@ -106,6 +109,9 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
             extra_hours: 0,
             payment_method: "",
             payment_status: "Pendente",
+            source_type: "Cliente Final",
+            source_id: "",
+            invoice_number: "",
         },
     });
 
@@ -254,6 +260,21 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                         </FormItem>
                                     )}
                                 />
+                                <FormField
+                                    name="invoice_number"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Número da Fatura</FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <FileText className="absolute left-3 top-2.5 h-4 w-4 text-[#0A1F1C]/40" />
+                                                    <Input placeholder="Ex: FT 2024/001" className="pl-9 focus-visible:ring-[#44C3B2]" {...field} />
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage className="text-[10px]" />
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
                         </div>
 
@@ -364,6 +385,64 @@ export function AddReservationDialog({ fleet }: AddReservationDialogProps) {
                                     </FormItem>
                                 )}
                             />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                            <FormField
+                                name="source_type"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70 font-bold">Origem da Reserva</FormLabel>
+                                        <Select onValueChange={(val) => {
+                                            field.onChange(val);
+                                            form.setValue("source_id", "");
+                                        }} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="focus:ring-[#44C3B2]">
+                                                    <SelectValue placeholder="Selecione a origem" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className="rounded-xl border-white/50 bg-white/90 backdrop-blur-xl">
+                                                <SelectItem value="Cliente Final">Cliente Final</SelectItem>
+                                                <SelectItem value="Agencia">Agência</SelectItem>
+                                                <SelectItem value="Redes Sociais">Redes Sociais</SelectItem>
+                                                <SelectItem value="Plataformas">Plataformas</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage className="text-[10px]" />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {form.watch("source_type") !== "Cliente Final" && (
+                                <FormField
+                                    name="source_id"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70 font-bold">
+                                                {form.watch("source_type") === "Agencia" ? "Qual Agência?" : 
+                                                 form.watch("source_type") === "Redes Sociais" ? "Qual Rede Social?" : "Qual Plataforma?"}
+                                            </FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className="focus:ring-[#44C3B2]">
+                                                        <SelectValue placeholder="Selecione a entidade" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent className="rounded-xl border-white/50 bg-white/90 backdrop-blur-xl">
+                                                    {allSources
+                                                        .filter(s => s.type === form.watch("source_type") && s.is_active)
+                                                        .map(s => (
+                                                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                                                        ))
+                                                    }
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage className="text-[10px]" />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
                         </div>
 
                         <div className="flex justify-end gap-3 pt-4">

@@ -67,6 +67,7 @@ export function EditBoatDialog({ boat, open, onOpenChange }: EditBoatDialogProps
             description: "",
             inclusions: "",
             order_index: 0,
+            invoice_number: "",
         },
     });
 
@@ -87,6 +88,7 @@ export function EditBoatDialog({ boat, open, onOpenChange }: EditBoatDialogProps
                 description: boat.description || "",
                 inclusions: boat.inclusions || "",
                 order_index: boat.order_index || 0,
+                invoice_number: boat.invoice_number || "",
             });
         }
     }, [boat, form]);
@@ -244,6 +246,23 @@ export function EditBoatDialog({ boat, open, onOpenChange }: EditBoatDialogProps
                                                         type="number"
                                                         {...field}
                                                         onChange={(e) => field.onChange(Number(e.target.value))}
+                                                        className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]"
+                                                    />
+                                                </FormControl>
+                                                <FormMessage className="text-[10px]" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="invoice_number"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/50">Número da Fatura (Padrão)</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        {...field}
+                                                        placeholder="Ex: FT 2024/"
                                                         className="rounded-xl border-white/50 bg-white/50 focus-visible:ring-[#44C3B2]"
                                                     />
                                                 </FormControl>

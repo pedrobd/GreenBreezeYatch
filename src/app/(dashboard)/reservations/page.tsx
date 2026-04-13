@@ -13,6 +13,10 @@ import { Calendar, X, Filter } from "lucide-react";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TimelineMap } from "./timeline-map";
+import { MonthlyMap } from "./monthly-map";
+import { ExportButton } from "@/components/analytics/export-button";
+import { getFoodMenuAction } from "@/app/actions/reservations";
+import { getTeamMembers } from "@/app/actions/team";
 import { Card, CardContent } from "@/components/ui/card";
 import { AddReservationDialog } from "@/components/reservations/add-reservation-dialog";
 import { ReservationActionsCell } from "@/components/reservations/reservation-actions-cell";
@@ -54,6 +58,7 @@ export default async function ReservationsPage({
     const search = (resolvedParams?.search as string) || '';
     const sort = (resolvedParams?.sort as string) || '';
     const order = (resolvedParams?.order as string) || 'desc';
+    const isVisualView = tab === 'map' || tab === 'calendar';
 
     // Build the query
     let query = supabaseAdmin
@@ -73,12 +78,13 @@ export default async function ReservationsPage({
                 food_id,
                 quantity,
                 food_menu(name)
-            )
+            ),
+            booking_sources(name)
         `, { count: 'exact' });
 
     // 1. Tab Filtering (Atuais vs Histórico)
     const todayStr = new Date().toISOString().split('T')[0];
-    if (tab === 'upcoming') {
+    if (tab === 'upcoming' || tab === 'map' || tab === 'calendar') {
         query = query.gte('date', todayStr).neq('status', 'Cancelado');
     } else if (tab === 'pending') {
         query = query.eq('status', 'Pendente');
@@ -114,20 +120,25 @@ export default async function ReservationsPage({
             .order('time', { ascending: true });
     }
 
-    // 4. Pagination
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-    query = query.range(from, to);
+    // 4. Pagination (ONLY for list view)
+    if (!isVisualView) {
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+        query = query.range(from, to);
+    }
 
     // Run the query
     const { data: reservations, count, error } = await query;
     const { rates = [] } = await getStaffRates();
+    const { data: team = [] } = await getTeamMembers();
+    const { data: availableFood = [] } = await getFoodMenuAction();
 
     if (error) {
         console.error("Error fetching reservations:", JSON.stringify(error, null, 2));
     }
 
     const totalPages = count ? Math.ceil(count / limit) : 0;
+    const safeReservations = reservations || [];
 
     function cn(...inputs: any[]) {
         return inputs.filter(Boolean).join(" ");
@@ -144,19 +155,29 @@ export default async function ReservationsPage({
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <ExportButton data={safeReservations} filename={`reservas-${tab}-${new Date().toISOString().split('T')[0]}`} />
                     <AddReservationDialog fleet={fleet || []} />
                 </div>
             </div>
 
-            <Tabs defaultValue="list" className="space-y-6">
+            <Tabs defaultValue={isVisualView ? tab : "list"} className="space-y-6">
                 <div className="flex items-center justify-between">
                     <TabsList className="bg-white/40 border border-white/50 backdrop-blur-xl p-1 rounded-2xl">
-                        <TabsTrigger value="list" className="rounded-xl px-6 data-[state=active]:bg-[#0A1F1C] data-[state=active]:text-[#44C3B2] data-[state=active]:shadow-lg font-bold text-xs uppercase tracking-wider transition-all">
-                            Lista de Reservas
-                        </TabsTrigger>
-                        <TabsTrigger value="map" className="rounded-xl px-6 data-[state=active]:bg-[#0A1F1C] data-[state=active]:text-[#44C3B2] data-[state=active]:shadow-lg font-bold text-xs uppercase tracking-wider transition-all">
-                            Mapa Diário
-                        </TabsTrigger>
+                        <Link href={{ query: { ...resolvedParams, tab: 'list' } }}>
+                            <TabsTrigger value="list" className="rounded-xl px-6 data-[state=active]:bg-[#0A1F1C] data-[state=active]:text-[#44C3B2] data-[state=active]:shadow-lg font-bold text-xs uppercase tracking-wider transition-all">
+                                Lista
+                            </TabsTrigger>
+                        </Link>
+                        <Link href={{ query: { ...resolvedParams, tab: 'map' } }}>
+                            <TabsTrigger value="map" className="rounded-xl px-6 data-[state=active]:bg-[#0A1F1C] data-[state=active]:text-[#44C3B2] data-[state=active]:shadow-lg font-bold text-xs uppercase tracking-wider transition-all">
+                                Mapa Diário
+                            </TabsTrigger>
+                        </Link>
+                        <Link href={{ query: { ...resolvedParams, tab: 'calendar' } }}>
+                            <TabsTrigger value="calendar" className="rounded-xl px-6 data-[state=active]:bg-[#0A1F1C] data-[state=active]:text-[#44C3B2] data-[state=active]:shadow-lg font-bold text-xs uppercase tracking-wider transition-all">
+                                Calendário Mensal
+                            </TabsTrigger>
+                        </Link>
                     </TabsList>
                 </div>
 
@@ -184,34 +205,47 @@ export default async function ReservationsPage({
                                     <Table>
                                         <TableHeader className="bg-[#0A1F1C]/5">
                                             <TableRow className="hover:bg-transparent border-white/20">
-                                                <TableHead className="w-[100px] font-black text-[10px] uppercase tracking-widest text-[#0A1F1C]/50 py-6 px-8">ID</TableHead>
-                                                <SortableTableHead column="client_name" label="Cliente" />
-                                                <SortableTableHead column="fleet" label="Barco" />
-                                                <SortableTableHead column="date" label="Data" />
-                                                <SortableTableHead column="time" label="Horário" />
-                                                <SortableTableHead column="status" label="Estado" />
-                                                <TableHead className="font-black text-[10px] uppercase tracking-widest text-[#0A1F1C]/50 py-6">Equipa</TableHead>
-                                                <SortableTableHead column="total_amount" label="Valor" className="text-right px-8" />
-                                                <TableHead className="w-[80px] py-6 px-8"></TableHead>
+                                                <TableHead className="w-[80px] font-black text-[10px] uppercase tracking-widest text-[#0A1F1C]/50 py-6 px-4">ID</TableHead>
+                                                <SortableTableHead column="client_name" label="Cliente" className="px-4" />
+                                                <SortableTableHead column="source_type" label="Origem" className="px-4" />
+                                                <SortableTableHead column="fleet" label="Barco" className="px-4" />
+                                                <SortableTableHead column="date" label="Data" className="px-4" />
+                                                <SortableTableHead column="time" label="Horário" className="px-4" />
+                                                <SortableTableHead column="status" label="Estado" className="px-4" />
+                                                <TableHead className="font-black text-[10px] uppercase tracking-widest text-[#0A1F1C]/50 py-6 px-4">Equipa</TableHead>
+                                                <TableHead className="w-[60px] py-6 px-4"></TableHead>
+                                                <SortableTableHead column="total_amount" label="Valor" className="text-right px-4" />
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {reservations?.length === 0 && (
+                                            {safeReservations.length === 0 && (
                                                 <TableRow>
                                                     <TableCell colSpan={9} className="h-32 text-center text-muted-foreground font-body">
                                                         Nenhuma reserva encontrada.
                                                     </TableCell>
                                                 </TableRow>
                                             )}
-                                            {reservations?.map((reservation: any) => (
+                                            {safeReservations.map((reservation: any) => (
                                                 <TableRow key={reservation.id} className="group hover:bg-white/30 border-white/10 transition-colors">
-                                                    <TableCell className="py-4 px-8">
+                                                    <TableCell className="py-4 px-4">
                                                         <span className="font-bold text-[#0A1F1C] opacity-20 text-[10px] tracking-wider">#{reservation.id.split('-')[0]}</span>
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex flex-col">
                                                             <span className="font-bold text-[#0A1F1C] text-sm mb-0.5">{reservation.client_name}</span>
                                                             <span className="text-[10px] text-muted-foreground">{reservation.client_email}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex flex-col gap-1">
+                                                            <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest bg-[#0A1F1C]/5 border-none text-[#0A1F1C]/60 px-2.5 py-1 rounded-lg w-fit">
+                                                                {reservation.source_type || "Cliente Final"}
+                                                            </Badge>
+                                                            {reservation.booking_sources?.name && (
+                                                                <span className="text-[10px] font-bold text-[#44C3B2] ml-1">
+                                                                    {reservation.booking_sources.name}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
@@ -266,11 +300,11 @@ export default async function ReservationsPage({
                                                             )}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="text-right py-4 px-8 font-bold text-[#0A1F1C] text-sm tabular-nums">
-                                                        €{reservation.total_amount.toFixed(2)}
-                                                    </TableCell>
-                                                    <TableCell className="py-4 px-8">
+                                                    <TableCell className="py-4 px-4">
                                                         <ReservationActionsCell reservation={reservation} fleet={fleet || []} />
+                                                    </TableCell>
+                                                    <TableCell className="text-right py-4 px-4 font-bold text-[#0A1F1C] text-sm tabular-nums">
+                                                        €{reservation.total_amount.toFixed(2)}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -284,13 +318,24 @@ export default async function ReservationsPage({
                     </ReservationProvider>
                 </TabsContent>
 
-                <TabsContent value="map" className="space-y-4 outline-none">
-                    <div className="rounded-3xl border-white/50 bg-white/40 shadow-2xl shadow-black/5 backdrop-blur-xl p-8 border min-h-[500px]">
-                        <div className="mb-6 flex items-center justify-between">
-                            <h3 className="text-2xl font-bold text-[#0A1F1C] font-heading underline decoration-[#44C3B2]/30 underline-offset-8">Alocação de Frota Diária</h3>
-                        </div>
-                        <TimelineMap reservations={reservations || []} fleet={fleet || []} />
-                    </div>
+                <TabsContent value="map" className="outline-none">
+                    <TimelineMap 
+                        reservations={safeReservations} 
+                        fleet={fleet || []} 
+                        team={team}
+                        rates={rates}
+                        availableFood={availableFood}
+                    />
+                </TabsContent>
+
+                <TabsContent value="calendar" className="outline-none">
+                    <MonthlyMap 
+                        reservations={safeReservations} 
+                        fleet={fleet || []} 
+                        team={team}
+                        rates={rates}
+                        availableFood={availableFood}
+                    />
                 </TabsContent>
             </Tabs>
         </div>

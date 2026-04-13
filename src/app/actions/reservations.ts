@@ -7,11 +7,12 @@ import { revalidatePath } from "next/cache";
 import { sendReservationEmails, sendCancellationEmail } from "@/app/actions/emails";
 
 /** Local type that reflects the DB shape (nullable FKs + optional time). */
-type ReservationData = Omit<ReservationFormValues, "selected_extras" | "selected_food" | "skipper_id" | "marinheiro_id" | "program_id"> & {
+type ReservationData = Omit<ReservationFormValues, "selected_extras" | "selected_food" | "skipper_id" | "marinheiro_id" | "program_id" | "source_id"> & {
     time?: string;
     skipper_id?: string | null;
     marinheiro_id?: string | null;
     program_id?: string | null;
+    source_id?: string | null;
 };
 
 /** Booking conflict row returned by the availability check. */
@@ -49,6 +50,7 @@ export async function createReservationAction(values: ReservationFormValues) {
     if (!data.skipper_id || data.skipper_id === "none") data.skipper_id = null;
     if (!data.marinheiro_id || data.marinheiro_id === "none") data.marinheiro_id = null;
     if (!data.program_id) data.program_id = null;
+    if (!data.source_id) data.source_id = null;
 
     if (data.program_id) {
         const { data: prog } = await adminClient.from("boat_programs").select("name").eq("id", data.program_id).single();
@@ -170,6 +172,14 @@ export async function updateReservationAction(id: string, values: ReservationFor
     if (!data.skipper_id || data.skipper_id === "none") data.skipper_id = null;
     if (!data.marinheiro_id || data.marinheiro_id === "none") data.marinheiro_id = null;
     if (!data.program_id) data.program_id = null;
+    if (!data.source_id) data.source_id = null;
+
+    console.log("DEBUG: Data for update:", { 
+        id, 
+        boat_id: data.boat_id, 
+        program_id: data.program_id, 
+        source_id: data.source_id 
+    });
 
     const adminClient = createAdminClient();
 

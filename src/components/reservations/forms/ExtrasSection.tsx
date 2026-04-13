@@ -38,7 +38,7 @@ export function ExtrasSection({
                 <div className="space-y-3">
                     <Select onValueChange={(val) => {
                         if (!selectedExtras.find(a => a.id === val)) {
-                            setValue("selected_extras", [...selectedExtras, { id: val, quantity: 1 }]);
+                            setValue("selected_extras", [...selectedExtras, { id: val, quantity: 1 }], { shouldDirty: true });
                         }
                     }}>
                         <SelectTrigger>
@@ -54,26 +54,42 @@ export function ExtrasSection({
                     <div className="flex flex-wrap gap-2">
                         {selectedExtras.map((item) => {
                             const activity = boatExtras.find(e => e.id === item.id);
+                            const hasLimit = activity?.max_quantity && activity.max_quantity > 0;
+                            const isAtLimit = hasLimit && item.quantity >= (activity?.max_quantity || 0);
+
                             return (
                                 <Badge key={item.id} variant="secondary" className="pl-3 pr-1 py-1 h-auto flex items-center gap-2 rounded-full bg-white/80 border-white/50 text-[#0A1F1C]">
-                                    <span className="text-[11px] font-bold">{activity?.name || "Extra"}</span>
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] font-bold">{activity?.name || "Extra"}</span>
+                                        {hasLimit && (
+                                            <span className="text-[8px] opacity-50 font-black uppercase tracking-tighter">Limite: {activity?.max_quantity}</span>
+                                        )}
+                                    </div>
                                     <div className="flex items-center bg-[#0A1F1C]/5 rounded-full px-1">
                                         <button type="button" onClick={() => {
                                             const next = selectedExtras.map(a =>
                                                 a.id === item.id ? { ...a, quantity: Math.max(1, a.quantity - 1) } : a
                                             );
-                                            setValue("selected_extras", next);
+                                            setValue("selected_extras", next, { shouldDirty: true });
                                         }} className="h-5 w-5 flex items-center justify-center hover:text-[#44C3B2]"><Minus className="h-3 w-3" /></button>
                                         <span className="text-[10px] w-4 text-center">{item.quantity}</span>
-                                        <button type="button" onClick={() => {
-                                            const next = selectedExtras.map(a =>
-                                                a.id === item.id ? { ...a, quantity: a.quantity + 1 } : a
-                                            );
-                                            setValue("selected_extras", next);
-                                        }} className="h-5 w-5 flex items-center justify-center hover:text-[#44C3B2]"><Plus className="h-3 w-3" /></button>
+                                        <button 
+                                            type="button" 
+                                            disabled={isAtLimit}
+                                            onClick={() => {
+                                                if (isAtLimit) return;
+                                                const next = selectedExtras.map(a =>
+                                                    a.id === item.id ? { ...a, quantity: a.quantity + 1 } : a
+                                                );
+                                                setValue("selected_extras", next, { shouldDirty: true });
+                                            }} 
+                                            className={`h-5 w-5 flex items-center justify-center transition-colors ${isAtLimit ? 'opacity-20 cursor-not-allowed' : 'hover:text-[#44C3B2]'}`}
+                                        >
+                                            <Plus className="h-3 w-3" />
+                                        </button>
                                     </div>
                                     <button type="button" onClick={() => {
-                                        setValue("selected_extras", selectedExtras.filter(a => a.id !== item.id));
+                                        setValue("selected_extras", selectedExtras.filter(a => a.id !== item.id), { shouldDirty: true });
                                     }} className="h-5 w-5 rounded-full hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors">
                                         <X className="h-3 w-3" />
                                     </button>
@@ -92,7 +108,7 @@ export function ExtrasSection({
                 <div className="space-y-3">
                     <Select onValueChange={(val) => {
                         if (!selectedFood.find(f => f.id === val)) {
-                            setValue("selected_food", [...selectedFood, { id: val, quantity: 1 }]);
+                            setValue("selected_food", [...selectedFood, { id: val, quantity: 1 }], { shouldDirty: true });
                         }
                     }}>
                         <SelectTrigger>
@@ -108,26 +124,42 @@ export function ExtrasSection({
                     <div className="flex flex-wrap gap-2">
                         {selectedFood.map((item) => {
                             const food = availableFood.find(f => f.id === item.id);
+                            const hasLimit = food?.max_quantity && food.max_quantity > 0;
+                            const isAtLimit = hasLimit && item.quantity >= (food?.max_quantity || 0);
+
                             return (
                                 <Badge key={item.id} variant="secondary" className="pl-3 pr-1 py-1 h-auto flex items-center gap-2 rounded-full bg-white/80 border-white/50 text-[#0A1F1C]">
-                                    <span className="text-[11px] font-bold">{food?.name || "Refeição"}</span>
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] font-bold">{food?.name || "Refeição"}</span>
+                                        {hasLimit && (
+                                            <span className="text-[8px] opacity-50 font-black uppercase tracking-tighter">Limite: {food?.max_quantity}</span>
+                                        )}
+                                    </div>
                                     <div className="flex items-center bg-[#0A1F1C]/5 rounded-full px-1">
                                         <button type="button" onClick={() => {
                                             const next = selectedFood.map(f =>
                                                 f.id === item.id ? { ...f, quantity: Math.max(1, f.quantity - 1) } : f
                                             );
-                                            setValue("selected_food", next);
+                                            setValue("selected_food", next, { shouldDirty: true });
                                         }} className="h-5 w-5 flex items-center justify-center hover:text-[#44C3B2]"><Minus className="h-3 w-3" /></button>
                                         <span className="text-[10px] w-4 text-center">{item.quantity}</span>
-                                        <button type="button" onClick={() => {
-                                            const next = selectedFood.map(f =>
-                                                f.id === item.id ? { ...f, quantity: f.quantity + 1 } : f
-                                            );
-                                            setValue("selected_food", next);
-                                        }} className="h-5 w-5 flex items-center justify-center hover:text-[#44C3B2]"><Plus className="h-3 w-3" /></button>
+                                        <button 
+                                            type="button" 
+                                            disabled={isAtLimit}
+                                            onClick={() => {
+                                                if (isAtLimit) return;
+                                                const next = selectedFood.map(f =>
+                                                    f.id === item.id ? { ...f, quantity: f.quantity + 1 } : f
+                                                );
+                                                setValue("selected_food", next, { shouldDirty: true });
+                                            }} 
+                                            className={`h-5 w-5 flex items-center justify-center transition-colors ${isAtLimit ? 'opacity-20 cursor-not-allowed' : 'hover:text-[#44C3B2]'}`}
+                                        >
+                                            <Plus className="h-3 w-3" />
+                                        </button>
                                     </div>
                                     <button type="button" onClick={() => {
-                                        setValue("selected_food", selectedFood.filter(f => f.id !== item.id));
+                                        setValue("selected_food", selectedFood.filter(f => f.id !== item.id), { shouldDirty: true });
                                     }} className="h-5 w-5 rounded-full hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors">
                                         <X className="h-3 w-3" />
                                     </button>
