@@ -32,8 +32,8 @@ export async function generateBlogContentAction(theme: string) {
                 // Find a suitable flash model. Prefer newer ones.
                 const models = data.models.map((m: any) => m.name.replace('models/', ''));
                 if (models.includes("gemini-3.0-flash")) targetModelStr = "gemini-3.0-flash";
-                else if (models.includes("gemini-2.5-flash")) targetModelStr = "gemini-2.5-flash";
                 else if (models.includes("gemini-2.0-flash")) targetModelStr = "gemini-2.0-flash";
+                else if (models.includes("gemini-2.5-flash")) targetModelStr = "gemini-2.5-flash";
                 else if (models.includes("gemini-1.5-flash")) targetModelStr = "gemini-1.5-flash";
                 else {
                     // Fallback to the first available generateContent model that is a gemini model
