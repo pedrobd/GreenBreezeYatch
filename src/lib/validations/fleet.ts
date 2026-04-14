@@ -14,7 +14,6 @@ export const boatSchema = z.object({
     description: z.string().optional(),
     inclusions: z.string().optional(),
     order_index: z.number().optional(),
-    invoice_number: z.string().optional(),
 });
 
 export type BoatFormValues = z.infer<typeof boatSchema>;
