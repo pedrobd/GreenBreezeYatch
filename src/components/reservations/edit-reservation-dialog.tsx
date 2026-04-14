@@ -325,13 +325,22 @@ export function EditReservationDialog({ reservation, fleet, open, onOpenChange, 
                                     </Select>
                                 </FormItem>
                             )} />
-                            <FormField control={form.control} name="notes" render={({ field }) => (
+                            <FormField control={form.control} name="invoice_number" render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70 font-bold">Notas / Observações</FormLabel>
-                                    <FormControl><Textarea {...field} className="min-h-[40px]" /></FormControl>
+                                    <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70">Nº da Fatura</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} placeholder="Ex: FT 2024/123" className="focus-visible:ring-[#44C3B2]" />
+                                    </FormControl>
                                 </FormItem>
                             )} />
                         </div>
+
+                        <FormField control={form.control} name="notes" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-[10px] font-black uppercase tracking-widest text-[#0A1F1C]/70 font-bold">Notas / Observações</FormLabel>
+                                <FormControl><Textarea {...field} className="min-h-[60px]" /></FormControl>
+                            </FormItem>
+                        )} />
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField control={form.control} name="source_type" render={({ field }) => (

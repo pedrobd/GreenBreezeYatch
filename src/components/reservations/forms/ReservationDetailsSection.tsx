@@ -161,8 +161,7 @@ export function ReservationDetailsSection({
                                 </FormControl>
                                 <SelectContent className="rounded-xl border-white/50 bg-white/90 backdrop-blur-xl">
                                     <SelectItem value="Mitrena">Mitrena</SelectItem>
-                                    <SelectItem value="Setúbal">Setúbal {!selectedBoat?.is_partner && "(Taxa extra)"}</SelectItem>
-                                    <SelectItem value="Tróia">Tróia</SelectItem>
+                                    <SelectItem value="Setúbal (Fontainhas)">Setúbal (Fontainhas) {!selectedBoat?.is_partner && "(Taxa extra)"}</SelectItem>
                                     <SelectItem value="Marina de Tróia">Marina de Tróia</SelectItem>
                                 </SelectContent>
                             </Select>

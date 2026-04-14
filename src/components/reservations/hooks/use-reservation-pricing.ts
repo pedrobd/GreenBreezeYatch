@@ -122,11 +122,30 @@ export function useReservationPricing({
             vatBase = baseGross - (baseGross / 1.23);
         }
 
-        const locationSurcharge = (!isPartner && selectedBoardingLocation === "Setúbal") ? (selectedBoat?.setubal_surcharge || 50) : 0;
+        const locationSurcharge = (!isPartner && selectedBoardingLocation.includes("Setúbal")) ? (selectedBoat?.setubal_surcharge || 50) : 0;
         baseGross += locationSurcharge;
 
         let extrasGross = 0;
         let vatExtras = 0;
+
+        // Mandatory Cleaning Fee for non-partner boats (Chaparral, Greenline, etc.)
+        if (!isPartner) {
+            // Check if it's already in selected extras to avoid double counting
+            const cleaningName = "taxa de limpeza";
+            const alreadyHasCleaning = selectedExtras.some(id => {
+                const extra = boatExtras.find(e => e.id === id.id);
+                return extra?.name.toLowerCase().includes(cleaningName);
+            });
+
+            if (!alreadyHasCleaning) {
+                const cleaningExtra = boatExtras.find(e => e.name.toLowerCase().includes(cleaningName));
+                const cleaningPrice = cleaningExtra?.price || 100;
+                const vatRate = cleaningExtra?.vat_rate || 23;
+                
+                extrasGross += cleaningPrice;
+                vatExtras += cleaningPrice - (cleaningPrice / (1 + (vatRate / 100)));
+            }
+        }
 
         // Calculate Extras (merged activities and boat extras)
         selectedExtras.forEach((curr) => {

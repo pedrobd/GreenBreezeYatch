@@ -233,7 +233,14 @@ export default async function ReservationsPage({
                                                     <TableCell>
                                                         <div className="flex flex-col">
                                                             <span className="font-bold text-[#0A1F1C] text-sm mb-0.5">{reservation.client_name}</span>
-                                                            <span className="text-[10px] text-muted-foreground">{reservation.client_email}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] text-muted-foreground">{reservation.client_email}</span>
+                                                                {reservation.invoice_number && (
+                                                                    <Badge variant="outline" className="text-[9px] bg-blue-50 text-blue-600 border-blue-200 px-1 py-0 h-4">
+                                                                        {reservation.invoice_number}
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
